@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import List
 
 app = FastAPI()
 books = []
@@ -8,6 +9,9 @@ class Book(BaseModel):
     id: int
     title: str
     author: str
+    description: str
+
+books: List[Book] = []
 
 @app.post("/books")
 def create_book(book:Book):
@@ -32,3 +36,13 @@ def delete_book(book_id: int):
     else:
         del_book = books.pop(book_id)
         return{"Success": "Book deleted successfully.", "book": del_book.dict()}
+
+
+@app.put("/books/{book_id}")
+def update_book(book_id: int, new_book: Book):
+    for i in range(len(books)):
+        if books[i].id == book_id:
+            books[i] = new_book
+            return{"Book updated successfully" : new_book}
+        
+    raise HTTPException(status_code = 400, detail = "Book not found")
