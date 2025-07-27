@@ -1,154 +1,209 @@
-
- # 📘 FastAPI Book Management API
+---
  
-A simple RESTful API built with FastAPI for managing a list of books. This API supports CRUD operations, path parameters, and filtering using query parameters.
+📘 Book Management API (FastAPI)
+ 
+A simple Book Management REST API built using FastAPI, demonstrating CRUD operations, filtering, enum usage, and path operation metadata.
+ 
  
 ---
  
-## 🚀 How to Run
+🚀 How to Run the Project
  
-1. Install dependencies:
-   ```bash
-   pip install fastapi uvicorn pydantic
+1. Install FastAPI and Uvicorn:
  
-2. Start the server:
+pip install fastapi uvicorn
+ 
+ 
+2. Run the server:
  
 uvicorn main:app --reload
  
  
-3. Open the interactive Swagger UI:
+3. Open in browser:
  
-http://127.0.0.1:8000/docs
+Swagger UI: http://localhost:8000/docs
+ 
+ReDoc: http://localhost:8000/redoc
+ 
  
  
  
  
 ---
  
-📚 Features Implemented
+📚 API Endpoints
  
-✅ 1. Add a New Book
+Method	Endpoint	Description	Tags
  
-Endpoint: POST /books
+GET	/books	Get all books	Books
+GET	/books/{book_id}	Get a book by ID	Books
+POST	/books	Add a new book	Books
+PUT	/books/{book_id}	Update a book by ID	Books
+DELETE	/books/{book_id}	Delete a book by ID	Books
+GET	/books/first	Get the first book	Books
+GET	/books/filter?author=...&title=...	Filter books by author/title	Books
+GET	/books/genre/{genre}	Get books by genre	Books
  
-Request Body:
+ 
+ 
+---
+ 
+🧾 Book Schema
  
 {
   "id": 1,
-  "title": "Inferno",
-  "author": "Dan Brown",
-  "description": "Thriller fiction"
+  "title": "Gen AI",
+  "author": "Varun M",
+  "YOP": 2025,
+  "description": "Intro to Gen AI",
+  "price": 500,
+  "genre": "tech"
 }
  
  
- 
 ---
  
-✅ 2. Get All Books
+📥 Example Requests & Responses
  
-Endpoint: GET /books
+✅ Add a Book (POST /books)
  
-Returns: List of all added books.
+Request Body
  
+{
+  "id": 1,
+  "title": "FastAPI in Action",
+  "author": "Varun M",
+  "YOP": 2025,
+  "description": "Learning FastAPI step by step",
+  "price": 499,
+  "genre": "tech"
+}
  
+Response
  
----
- 
-✅ 3. Get Book by ID
- 
-Endpoint: GET /books/{book_id}
- 
-Path Parameter: book_id (integer)
- 
-Returns: Book with matching ID.
- 
- 
- 
----
- 
-✅ 4. Update a Book
- 
-Endpoint: PUT /books/{book_id}
- 
-Path Parameter: book_id (integer)
- 
-Request Body: Updated book object.
- 
-Returns: Success message with updated book.
- 
+{
+  "id": 1,
+  "title": "FastAPI in Action",
+  "author": "Varun M",
+  "YOP": 2025,
+  "description": "Learning FastAPI step by step",
+  "price": 499,
+  "genre": "tech"
+}
  
  
 ---
  
-✅ 5. Delete a Book
+🔍 Get All Books (GET /books)
  
-Endpoint: DELETE /books/{book_id}
+Response
  
-Path Parameter: book_id (integer)
+[
+  {
+    "id": 1,
+    "title": "FastAPI in Action",
+    "author": "Varun M",
+    "YOP": 2025,
+    "description": "Learning FastAPI step by step",
+    "price": 499,
+    "genre": "tech"
+  }
+]
  
-Returns: Deleted book details.
+ 
+---
+ 
+✏️ Update a Book (PUT /books/1)
+ 
+Request Body
+ 
+{
+  "id": 1,
+  "title": "Updated Title",
+  "author": "Varun M",
+  "YOP": 2026,
+  "description": "Updated description",
+  "price": 599,
+  "genre": "tech"
+}
+ 
+Response
+ 
+{
+  "id": 1,
+  "title": "Updated Title",
+  "author": "Varun M",
+  "YOP": 2026,
+  "description": "Updated description",
+  "price": 599,
+  "genre": "tech"
+}
+ 
+ 
+---
+ 
+❌ Delete a Book (DELETE /books/1)
+ 
+Response
+ 
+{
+  "success": "Book deleted successfully.",
+  "book": {
+    "id": 1,
+    "title": "FastAPI in Action",
+    "author": "Varun M",
+    "YOP": 2025,
+    "description": "Learning FastAPI step by step",
+    "price": 499,
+    "genre": "tech"
+  }
+}
+ 
+ 
+---
+ 
+🔎 Filter by Author or Title (GET /books/filter?author=Varun)
+ 
+Response
+ 
+[
+  {
+    "id": 1,
+    "title": "FastAPI in Action",
+    "author": "Varun M",
+    "YOP": 2025,
+    "description": "Learning FastAPI step by step",
+    "price": 499,
+    "genre": "tech"
+  }
+]
+ 
+ 
+---
+ 
+🧠 Technologies Used
+ 
+Python
+ 
+FastAPI
+ 
+Pydantic
+ 
+Uvicorn
  
  
  
 ---
  
-✅ 6. Filter Books by Author and/or Title (Query Parameters)
+🏷 Path Metadata Tags
  
-Endpoint: GET /books/filter
+All routes use:
  
-Query Parameters:
+tags=["Books"]
  
-author (optional)
- 
-title (optional)
+summary, description, and response_description for improved Swagger docs.
  
  
-Examples:
- 
-/books/filter → Returns all books
- 
-/books/filter?author=Dan Brown → Filters by author
- 
-/books/filter?title=Inferno → Filters by title
- 
-/books/filter?author=Dan Brown&title=Inferno → Filters by both
- 
- 
-Returns: Filtered list based on query parameters
- 
- 
- 
----
- 
-🛠️ Upcoming Features
- 
-✅ Handling nested request bodies (e.g. with tags, genres)
- 
-✅ Validation & custom error messages
- 
-⏳ Pagination and sorting
- 
-⏳ Persistent storage (e.g. SQLite or PostgreSQL)
- 
- 
- 
----
- 
-📌 Notes
- 
-All filtering is case-insensitive
- 
-Proper error handling using HTTPException
- 
-Uses Pydantic models for data validation
- 
- 
- 
----
- 
-📎 Author
- 
-Built by Varun M
  
 ---
 
