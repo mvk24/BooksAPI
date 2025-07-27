@@ -1,191 +1,155 @@
-<!-- # FastAPI Book API 📚
+
+ # 📘 FastAPI Book Management API
  
-A simple CRUD API using FastAPI and Pydantic.
+A simple RESTful API built with FastAPI for managing a list of books. This API supports CRUD operations, path parameters, and filtering using query parameters.
  
-## Features
+---
  
-- Add a book ✅
-- Get list of books ✅
-- Delete a book ✅
- 
-## How to Run
+## 🚀 How to Run
  
 1. Install dependencies:
+   ```bash
+   pip install fastapi uvicorn pydantic
  
-```bash
-pip install -r requirements.txt
-
-
-2. Run the server:
-
-uvicorn main:app --reload
-
-
-3. Open your browser:
-
-http://127.0.0.1:8000/docs -->
-
-
----
- 
-# 📚 FastAPI Books CRUD API (In-Memory)
- 
-This is a beginner-friendly **CRUD API** built with **FastAPI** using **in-memory storage** (no database yet). It allows users to **create, view, update, and delete books**.
- 
----
- 
-## 🚀 Features
- 
-- ✅ Add a new book
-- ✅ Get all books
-- ✅ Get a book by ID
-- ✅ Delete a book by ID
-- ✅ Update a book by ID
-- ❌ No database yet — uses an in-memory list
-- 🧪 Testable with Swagger UI
- 
----
- 
-## 🧰 Tech Stack
- 
-- **Python 3.10+**
-- **FastAPI**
-- **Pydantic**
-- **Uvicorn** (for running the server)
- 
----
- 
-## 📦 Installation
- 
-### 1. Clone the Repository
- 
-```bash
-git clone https://github.com/your-username/BooksAPI.git
-cd BooksAPI
- 
-2. Create Virtual Environment
- 
-python -m venv venv
- 
-3. Activate Virtual Environment
- 
-# Windows
-.\venv\Scripts\activate
- 
-# Mac/Linux
-source venv/bin/activate
- 
-4. Install Requirements
- 
-pip install fastapi uvicorn
- 
- 
----
- 
-▶️ Running the App
+2. Start the server:
  
 uvicorn main:app --reload
  
-Visit: http://127.0.0.1:8000/docs
-This opens the interactive Swagger UI to test all APIs.
+ 
+3. Open the interactive Swagger UI:
+ 
+http://127.0.0.1:8000/docs
+ 
+ 
  
  
 ---
  
-🛠️ API Endpoints
+📚 Features Implemented
  
-➕ Create a Book
+✅ 1. Add a New Book
  
-POST /books
+Endpoint: POST /books
  
 Request Body:
  
 {
   "id": 1,
-  "title": "Book Title",
-  "author": "Author Name",
-  "description": "Description of the book"
+  "title": "Inferno",
+  "author": "Dan Brown",
+  "description": "Thriller fiction"
 }
  
  
----
- 
-📖 Get All Books
- 
-GET /books
- 
  
 ---
  
-🔍 Get Book by ID
+✅ 2. Get All Books
  
-GET /books/{book_id}
+Endpoint: GET /books
+ 
+Returns: List of all added books.
+ 
  
  
 ---
  
-✏️ Update a Book by ID
+✅ 3. Get Book by ID
  
-PUT /books/{book_id}
+Endpoint: GET /books/{book_id}
  
-Request Body:
+Path Parameter: book_id (integer)
  
-{
-  "id": 1,
-  "title": "Updated Title",
-  "author": "Updated Author",
-  "description": "Updated description"
-}
+Returns: Book with matching ID.
+ 
  
  
 ---
  
-❌ Delete a Book by ID
+✅ 4. Update a Book
  
-DELETE /books/{book_id}
+Endpoint: PUT /books/{book_id}
+ 
+Path Parameter: book_id (integer)
+ 
+Request Body: Updated book object.
+ 
+Returns: Success message with updated book.
+ 
  
  
 ---
  
-📁 File Structure
+✅ 5. Delete a Book
  
-BooksAPI/
-├── main.py            # FastAPI app with all routes
-├── README.md          # You're reading it
-├── venv/              # Virtual environment (optional in .gitignore)
+Endpoint: DELETE /books/{book_id}
+ 
+Path Parameter: book_id (integer)
+ 
+Returns: Deleted book details.
+ 
+ 
+ 
+---
+ 
+✅ 6. Filter Books by Author and/or Title (Query Parameters)
+ 
+Endpoint: GET /books/filter
+ 
+Query Parameters:
+ 
+author (optional)
+ 
+title (optional)
+ 
+ 
+Examples:
+ 
+/books/filter → Returns all books
+ 
+/books/filter?author=Dan Brown → Filters by author
+ 
+/books/filter?title=Inferno → Filters by title
+ 
+/books/filter?author=Dan Brown&title=Inferno → Filters by both
+ 
+ 
+Returns: Filtered list based on query parameters
+ 
+ 
+ 
+---
+ 
+🛠️ Upcoming Features
+ 
+✅ Handling nested request bodies (e.g. with tags, genres)
+ 
+✅ Validation & custom error messages
+ 
+⏳ Pagination and sorting
+ 
+⏳ Persistent storage (e.g. SQLite or PostgreSQL)
+ 
  
  
 ---
  
 📌 Notes
  
-This project does not use a database. All book records will reset when the server restarts.
+All filtering is case-insensitive
  
-Perfect for FastAPI beginners to understand the basics of CRUD.
+Proper error handling using HTTPException
  
- 
- 
----
- 
-🌟 Future Improvements
- 
-🔐 Add authentication with JWT
- 
-💾 Use SQLite or PostgreSQL
- 
-🔄 Add pagination & filtering
- 
-📦 Dockerize the app
+Uses Pydantic models for data validation
  
  
  
 ---
  
-🙌 Acknowledgements
+📎 Author
  
-FastAPI Documentation
- 
-Pydantic Documentation
- 
+Built by Varun M
  
 ---
+
+ 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 app = FastAPI()
 
@@ -10,11 +10,14 @@ class Book(BaseModel):
     author: str
     description: str
 
-books: List[Book] = []
+books: List[Book] = [
+    Book(id = 0, title = "Python", author = "Varun", description = "Good Python Book."),
+    Book(id = 1, title = "DSA", author = "MVK", description = "Good DSA Book."),
+    Book(id = 2, title = "Java", author = "MVK", description = "Java best seller.")
+]
 
 
 # TO ADD NEW BOOK
-
 @app.post("/books")
 def create_book(book:Book):
     for b in books:
@@ -27,48 +30,59 @@ def create_book(book:Book):
 
 
 # GET ALL BOOKS WITHOUT FILTERS
-
 @app.get("/books")
 def get_all_books():
     return books
 
 
-# GET BOOKS BY ID
 
+# FILTER BOOKS BY AUTHOR (QUERY PARAMATER)
+@app.get("/books/filter")
+def filter_books(author: Optional[str] = None, title: Optional[str] = None):
+    if author is None and title is None:
+        return{"All Books": books}
+    filtered_books = books
+    if author:
+        filtered_books = [book for book in filtered_books if author.lower() in book.author.lower()]
+    if title:
+        filtered_books = [book for book in filtered_books if title.lower() in book.title.lower()]
+    return filtered_books
+
+
+
+# GET BOOKS BY ID ( PATH PARAMETER )
 @app.get("/books/{book_id}")
 def get_book(book_id: int):
-    if book_id < 0 or book_id >= len(books):
-        return("Error: Book does not exists.")
-    else:
-        return books[book_id]
+    for book in books:
+        if book.id == book_id:
+            return book
+    raise HTTPException(status_code=404, detail="Book not found.")
 
 
 
-# DELETE BOOKS BY ID
-
+# DELETE BOOKS BY ID ( PATH PARAMETER )
 @app.delete("/books/{book_id}")
 def delete_book(book_id: int):
-    if book_id < 0 or book_id >= len(books):
-        return("Error: Book does not exists")
-    else:
-        del_book = books.pop(book_id)
-        return{"Success": "Book deleted successfully.", "book": del_book.dict()}
+        for index, book in enumerate(books):
+            if book.id == book_id:
+                del_book = books.pop(book_id)
+                return{"Success": "Book deleted successfully.", "book": del_book}
+        raise HTTPException(status_code=404, detail="Book not found.")
+    
 
 
-# UPDATE BOOKS BY ID
-
+# UPDATE BOOKS BY ID ( PATH PARAMETER + REQUEST BODY )
 @app.put("/books/{book_id}")
 def update_book(book_id: int, updated_book: Book):
     for index, book in enumerate(books):
-        if books.id == book_id:
-            if update_book.id != book_id and any(b.id == update_book.id for b in books):
+        if book.id == book_id:
+            if updated_book.id != book_id and any(b.id == updated_book.id for b in books):
                 raise HTTPException(status_code=400, detail="Updated ID already exists for another book. Please change the ID.")
-            books[index] = update_book
-            return{"message": "Book Updated", "book": update_book}
+            books[index] = updated_book
+            return{"message": "Book Updated", "book": updated_book}
         
     raise HTTPException(status_code = 404, detail = "Book not found")
 
 
 
 
-# FILTER BOOKS BY AUTHOR (QUERY PARAMATER)
