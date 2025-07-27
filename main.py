@@ -1,31 +1,37 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 app = FastAPI()
 
+
+# DEFINING THE DATA MODEL WITH VALIDATION
 class Book(BaseModel):
     id: int
-    title: str
-    author: str
-    description: str
+    title: str = Field(..., min_length = 3, max_length = 100, description = "Title must be between 3-100 characters long.")
+    author: str = Field(..., min_length = 3, description = "Author name should be atleast 3 characters.")
+    YOP: Optional[int] = None
+    description: str = Field(..., min_length = 5, max_length = 100, description = "Please provide a decsription of length 5-100 characters.")
+    price: float = Field(..., gt = 0)
 
+
+# LOCAL IN MEMORY LIST TO STORE DEFAULT BOOK RECORDS, USER INPUT VIA SWAGGER UI ARE ACCEPTED.
 books: List[Book] = [
-    Book(id = 0, title = "Python", author = "Varun", description = "Good Python Book."),
-    Book(id = 1, title = "DSA", author = "MVK", description = "Good DSA Book."),
-    Book(id = 2, title = "Java", author = "MVK", description = "Java best seller.")
+    Book(id = 0, title = "Python", author = "Varun", YOP = 2025, description = "Good Python Book.", price = 777),
+    Book(id = 1, title = "DSA", author = "MVK", description = "Good DSA Book.", price = 500.99),
+    Book(id = 2, title = "Java", author = "MVK", description = "Java best seller.", price = 600)
 ]
 
 
 # TO ADD NEW BOOK
-@app.post("/books")
+@app.post("/books", response_model = Book, response_model_exclude_none = True)
 def create_book(book:Book):
     for b in books:
         if b.id == book.id:
             raise HTTPException(status_code=400, detail=f"Book with ID {book.id} already exists.")
 
     books.append(book)
-    return{"Successfull": "Book added successfully", "book": book.dict()}
+    return book
 
 
 
@@ -36,7 +42,7 @@ def get_all_books():
 
 
 
-# FILTER BOOKS BY AUTHOR (QUERY PARAMATER)
+# FILTER BOOKS BY AUTHOR & TITLE (QUERY PARAMATER)
 @app.get("/books/filter")
 def filter_books(author: Optional[str] = None, title: Optional[str] = None):
     if author is None and title is None:
