@@ -206,5 +206,88 @@ summary, description, and response_description for improved Swagger docs.
  
  
 ---
+ 
+## 📘 GET /books/filter
+ 
+Filter books by **author** and/or **title**.
+ 
+- `title` is now deprecated.
+- Use the new query parameter: `book_title` instead.
+ 
+### 🔖 Tags
+`Books`
+ 
+### 📝 Summary
+List of Filtered Books
+ 
+### 📄 Description
+This endpoint allows filtering of the book list based on:
+- Author name (`Author_Name`)
+- Book title (`book_title` or legacy `title`, which is deprecated)
+ 
+---
+ 
+### 🔧 Query Parameters
+ 
+| Name        | Type     | Required | Description                                                   |
+|-------------|----------|----------|---------------------------------------------------------------|
+| Author_Name | string   | No       | Filter by book author (case-insensitive)                      |
+| book_title  | string   | No       | Filter by book title (preferred parameter)                    |
+| title       | string   | No       | (Deprecated) Use `book_title` instead                         |
+ 
+---
+ 
+### 📥 Example Request URLs
+ 
+- Get all books (no filters):
+ 
+GET /books/filter
+ 
+- Filter by author only:
+ 
+GET /books/filter?Author_Name=John
+ 
+- Filter by new `book_title`:
+ 
+GET /books/filter?book_title=Python
+ 
+- Filter by deprecated `title`:
+ 
+GET /books/filter?title=Python
+ 
+- Filter by both:
+ 
+GET /books/filter?Author_Name=Jane&book_title=Advanced
+ 
+---
+ 
+### 📤 Example JSON Response
+ 
+```json
+[
+{
+  "id": 1,
+  "title": "Python Basics",
+  "author": "John Doe"
+},
+{
+  "id": 3,
+  "title": "Advanced Python",
+  "author": "Jane Smith"
+}
+]
+ 
+ 
+---
+ 
+⚠️ Notes
+ 
+If all query parameters are empty, all books will be returned.
+ 
+Deprecated parameters still work for backward compatibility, but usage should be migrated to the new one.
+ 
+ 
+---
+ 
 
  

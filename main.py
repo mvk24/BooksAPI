@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -75,14 +75,20 @@ def get_book_by_genere(genere: GenereNum):
 
 # FILTER BOOKS BY AUTHOR & TITLE (QUERY PARAMATER)
 @app.get("/books/filter", response_model = List[Book], tags = ["Books"], summary = "List of Filtered books.", description = "Filter books by author AND/OR title using Path and Query Parameters.", response_description = "List of filtered books")
-def filter_books(author: Optional[str] = None, title: Optional[str] = None):
-    if author is None and title is None:
+def filter_books(
+    author: Optional[str] = Query(None, alias = "Author_Name"),
+    title: Optional[str] = Query(None, deprecated = True, description = "This parameter is deprecated. Use new paramater i.e. Book_Title"),
+    Book_Title: Optional[str] = Query(None, description = "New parameter for title") ):
+    if author is None and title is None and Book_Title is None:
         return{"All Books": books}
+    
+    search_title = Book_Title or title
+
     filtered_books = books
     if author:
         filtered_books = [book for book in filtered_books if author.lower() in book.author.lower()]
-    if title:
-        filtered_books = [book for book in filtered_books if title.lower() in book.title.lower()]
+    if search_title:
+        filtered_books = [book for book in filtered_books if search_title.lower() in book.title.lower()]
     return filtered_books
 
 
