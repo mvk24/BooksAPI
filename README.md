@@ -1,6 +1,3 @@
-Here is your complete and updated README.md file for your FastAPI Book Management Project, including all endpoints, with today's changes (i.e., query param aliasing, deprecation, tags, and summaries):
- 
- 
 ---
  
 # 📚 FastAPI Book Management API
@@ -262,7 +259,7 @@ deprecated (e.g., title)
 🏁 Author
  
 Built with ❤️ using FastAPI
-Maintained by [Varun M]
+Maintained by Varun M
  
  
 ---
