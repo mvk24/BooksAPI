@@ -1,7 +1,5 @@
 ---
- 
-✅ README.md — Book Management API with FastAPI
- 
+
 # 📘 Book Management API with FastAPI
  
 This is a complete backend project for managing books using **FastAPI**. It covers RESTful API operations, Swagger documentation, HTML form integration (Jinja2), query/path parameters, validation, and custom error handling.
