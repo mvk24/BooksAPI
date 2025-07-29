@@ -1,13 +1,33 @@
-from fastapi import FastAPI, HTTPException, Query, Form, Request, status
+from fastapi import FastAPI, HTTPException, Query, Form, Request, status, Depends, Path
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from db import get_db
 from enum import Enum
+import time
 
 
 app = FastAPI()
-templates = Jinja2Templates(directory = "templates")
+
+
+# MIDDLEWARE TO LOG TIME TAKEN BY DIFF REQUESTS OR PROCESS
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        print(f"[{request.method}] {request.url} completed in {process_time:.4f}s")
+        return response
+
+
+
+# MIDDELEWARE
+app.add_middleware(LoggingMiddleware)
+# JINJA 2 TEMPLATE TO ADD BOOK VIA HTML FORM
+templates = Jinja2Templates(directory = "templates")     
+
 
 
 # ENUM FOR VALID GENERS
@@ -30,12 +50,23 @@ class Book(BaseModel):
     price: float = Field(..., gt = 0)
 
 
+
 # LOCAL IN MEMORY LIST TO STORE DEFAULT BOOK RECORDS, USER INPUT VIA SWAGGER UI ARE ACCEPTED.
 books: List[Book] = [
     Book(id = 0, title = "Python", author = "Varun", genere = "tech", YOP = 2025, description = "Good Python Book.", price = 777),
     Book(id = 1, title = "DSA", author = "MVK", genere = "science", description = "Good DSA Book.", price = 500.99),
-    Book(id = 2, title = "Java", author = "MVK", genere = "fiction", description = "Java best seller.", price = 600)
-]
+    Book(id = 2, title = "Java", author = "MVK", genere = "fiction", description = "Java best seller.", price = 600)]
+
+
+
+
+# Re-Usable dependency to fetch Book by ID
+def get_book_id(book_id: int):
+    for book in books:
+        if book.id == book_id:
+            return book
+    raise HTTPException(status_code = 404, detail = "Book not found")
+
 
 
 # TO ADD NEW BOOK
@@ -60,8 +91,8 @@ def get_all_books():
 def book_form(request: Request):
     return templates.TemplateResponse("book_form.html", {"request": request, "books": books})
 
-
-@app.post("/form-ui", response_class = HTMLResponse, tags = ["Books"], summary = "Add book using and HTML Form", description = "Add new Book using HTML FORM instead of JSON Format", response_description = "The Book added")
+# POST REQUEST TO HANDLE FORM DATA FROM JINJA 2 TEMPLATE
+@app.post("/form-ui", response_class = HTMLResponse, tags = ["Books"], summary = "Add a new book using HTML Form", description = "Add new Book using HTML FORM instead of JSON Format", response_description = "The Book added")
 async def submit_form(
     request: Request,
     id: int = Form(...),
@@ -122,13 +153,10 @@ def filter_books(
 
 
 
-# GET BOOKS BY ID ( PATH PARAMETER )
+# GET BOOKS BY ID ( Used Dependency Injection )
 @app.get("/books/{book_id}", response_model = Book, tags = ["Books"], summary = "Get Book by ID", description = "Fetch a single book usings its ID", response_description = "Matching Book", status_code = 200)
-def get_book(book_id: int):
-    for book in books:
-        if book.id == book_id:
-            return book
-    raise HTTPException(status_code = 404, detail = "Book not found.")
+def read_book(book: Book = Depends(get_book_id)):
+    return book
 
 
 
@@ -138,7 +166,7 @@ def delete_book(book_id: int):
         for index, book in enumerate(books):
             if book.id == book_id:
                 del_book = books.pop(index)
-                return{"Success": "Book deleted successfully.", "book": del_book}
+                return JSONResponse(content = {"Success":"Book deleted successfully.", "book": del_book.dict()})
         raise HTTPException(status_code = 404, detail="Book not found.")
     
 
@@ -151,7 +179,7 @@ def update_book(book_id: int, updated_book: Book):
             if updated_book.id != book_id and any(b.id == updated_book.id for b in books):
                 raise HTTPException(status_code = 400, detail = "Updated ID already exists for another book. Please change the ID.")
             books[index] = updated_book
-            return{"message": "Book Updated", "book": updated_book}
+            return JSONResponse(content = {"message": "Book Updated Successfully", "book": updated_book.dict()})
         
     raise HTTPException(status_code = 404, detail = "Book not found")
 
