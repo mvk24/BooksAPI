@@ -1,268 +1,198 @@
 ---
  
-# 📚 FastAPI Book Management API
+✅ README.md — Book Management API with FastAPI
  
-A simple Book Management REST API built using FastAPI, demonstrating core concepts such as CRUD operations, path and query parameters, validation, tagging, documentation, and more.
+# 📘 Book Management API with FastAPI
+ 
+This is a complete backend project for managing books using **FastAPI**. It covers RESTful API operations, Swagger documentation, HTML form integration (Jinja2), query/path parameters, validation, and custom error handling.
  
 ---
  
-## 🚀 Run the Application
+## 🛠️ Requirements
  
 ```bash
+pip install fastapi uvicorn jinja2
+ 
+ 
+---
+ 
+🚀 Project Structure
+ 
+project/
+│
+├── main.py
+├── templates/
+│   └── book_form.html
+├── static/ (optional)
+│
+└── README.md
+ 
+ 
+---
+ 
+📡 API Endpoints
+ 
+➕ Add Book (JSON)
+ 
+POST /books/
+ 
+Body: JSON
+ 
+Validations: Unique id or title
+ 
+Returns: Added book object or 400 error
+ 
+ 
+ 
+---
+ 
+📄 Get All Books
+ 
+GET /books/
+ 
+Returns: List of all books
+ 
+ 
+ 
+---
+ 
+🔍 Get Book by ID
+ 
+GET /books/{book_id}
+ 
+Returns: Single book or 404 error
+ 
+ 
+ 
+---
+ 
+🔍 Get Book by Title or Author (Query Parameter)
+ 
+GET /books/search?title=xyz&author=abc
+ 
+Returns: Matching book or 404
+ 
+title is marked as deprecated
+ 
+ 
+ 
+---
+ 
+✏️ Update Book
+ 
+PUT /books/{book_id}
+ 
+Updates: Entire book record
+ 
+Returns: Updated object or 404
+ 
+ 
+ 
+---
+ 
+❌ Delete Book by ID
+ 
+DELETE /books/{book_id}
+ 
+Deletes: Book from DB
+ 
+Returns: Success or 404
+ 
+ 
+ 
+---
+ 
+🌐 HTML Form Integration (Jinja2)
+ 
+📄 Show Form UI
+ 
+GET /form-ui
+ 
+Returns: HTML form to add book using book_form.html Jinja2 template
+ 
+ 
+✅ Submit Book via HTML Form
+ 
+POST /form-ui
+ 
+Form Data: id, title, author, yop, genre, description, price
+ 
+Validations:
+ 
+Unique id or title check
+ 
+Optional: yop, description
+ 
+ 
+Returns: Redirect to form with success or error message
+ 
+ 
+ 
+---
+ 
+⚙️ Special Features
+ 
+✅ @Query with deprecated=True on title
+ 
+✅ @Form(...) input via HTML
+ 
+✅ Dynamic Jinja2 template rendering
+ 
+✅ Duplicate book validation (by ID or title)
+ 
+✅ Redirect after form submission
+ 
+✅ Manual HTMLResponse for errors
+ 
+✅ FastAPI Swagger UI with examples
+ 
+✅ Error code consistency: 400, 404, 422
+ 
+ 
+ 
+---
+ 
+🧪 Testing
+ 
+🔁 Run the API:
+ 
 uvicorn main:app --reload
  
+📂 Visit:
  
----
+Swagger: http://localhost:8000/docs
  
-📌 Endpoints Summary
+Redoc: http://localhost:8000/redoc
  
-Method	Endpoint	Description
- 
-GET	/books	Get all books
-GET	/books/{book_id}	Get a single book by ID
-GET	/books/first	Get the first book
-GET	/books/filter	Filter books by author/title
-GET	/books/genre/{genre}	Get books by genre
-POST	/books	Add a new book
-PUT	/books/{book_id}	Update a book by ID
-DELETE	/books/{book_id}	Delete a book by ID
+Form UI: http://localhost:8000/form-ui
  
  
  
 ---
  
-📘 GET /books
+📝 Notes
  
-Get all books in the system.
+FastAPI can use Jinja2 just like Flask or Django for server-side HTML rendering.
  
-✅ Example Response
+Swagger UI form inputs may show "data type" as initial value — can't fully override this without client-side JavaScript.
  
-[
-  {
-    "id": 1,
-    "title": "Python Basics",
-    "author": "John Doe"
-  }
-]
- 
- 
----
- 
-📘 GET /books/{book_id}
- 
-Get a single book using its ID.
- 
-🔧 Path Parameter
- 
-Name	Type	Description
- 
-book_id	int	ID of the book
- 
- 
-❌ Errors
- 
-404 Not Found – If no book is found.
+Placeholder text for HTML input was used to replace default data type values.
  
  
  
 ---
  
-📘 GET /books/first
+📌 TODO / Optional Enhancements
  
-Returns the first book in the collection.
+[ ] Persist data in DB (e.g., SQLite, PostgreSQL)
  
-❌ Errors
+[ ] Add update form UI
  
-400 Bad Request – If no books exist.
+[ ] Handle file/image uploads (e.g., book cover)
  
- 
- 
----
- 
-📘 GET /books/filter
- 
-Filter books by author and/or title.
- 
-🔖 Tags
- 
-Books
- 
-📝 Summary
- 
-List of Filtered Books
- 
-📄 Description
- 
-This endpoint allows filtering of the book list based on:
- 
-Author name (Author_Name)
- 
-Book title (book_title or legacy title, which is deprecated)
+[ ] Add login/auth for form access
  
  
  
 ---
- 
-🔧 Query Parameters
- 
-Name	Type	Required	Description
- 
-Author_Name	string	No	Filter by book author (case-insensitive)
-book_title	string	No	Filter by book title (preferred parameter)
-title	string	No	(Deprecated) Use book_title instead
- 
- 
- 
----
- 
-📥 Example Request URLs
- 
-Get all books:
- 
-GET /books/filter
- 
-Filter by author:
- 
-GET /books/filter?Author_Name=John
- 
-Filter by book_title:
- 
-GET /books/filter?book_title=Python
- 
-Filter by deprecated title:
- 
-GET /books/filter?title=Python
- 
-Filter by both:
- 
-GET /books/filter?Author_Name=Jane&book_title=Advanced
- 
- 
-📤 Example Response
- 
-[
-  {
-    "id": 1,
-    "title": "Python Basics",
-    "author": "John Doe"
-  }
-]
- 
- 
----
- 
-📘 GET /books/genre/{genre}
- 
-Get all books matching a genre.
- 
-🔧 Path Parameter
- 
-Name	Type	Description
- 
-genre	str	Genre of the book
- 
- 
- 
----
- 
-➕ POST /books
- 
-Add a new book.
- 
-📥 Example Request
- 
-{
-  "id": 3,
-  "title": "New Book",
-  "author": "Alice"
-}
- 
-📤 Example Response
- 
-{
-  "id": 3,
-  "title": "New Book",
-  "author": "Alice"
-}
- 
- 
----
- 
-✏️ PUT /books/{book_id}
- 
-Update a book by ID.
- 
-📥 Example Request
- 
-{
-  "id": 3,
-  "title": "Updated Title",
-  "author": "Updated Author"
-}
- 
-📤 Example Response
- 
-{
-  "id": 3,
-  "title": "Updated Title",
-  "author": "Updated Author"
-}
- 
-❌ Errors
- 
-404 Not Found – If book not found.
- 
- 
- 
----
- 
-❌ DELETE /books/{book_id}
- 
-Delete a book by ID.
- 
-🔧 Path Parameter
- 
-Name	Type	Description
- 
-book_id	int	ID of the book
- 
- 
-📤 Example Response
- 
-{
-  "Success": "Book deleted successfully.",
-  "book": {
-    "id": 3,
-    "title": "Updated Title",
-    "author": "Updated Author"
-  }
-}
- 
- 
----
- 
-🔖 Tags & Metadata
- 
-All endpoints are grouped under the tag: "Books"
- 
-Some parameters use:
- 
-alias (e.g., Author_Name instead of author)
- 
-deprecated (e.g., title)
- 
- 
- 
- 
----
- 
-🏁 Author
- 
-Built with ❤️ using FastAPI
-Maintained by Varun M
- 
- 
----
- 
-
  

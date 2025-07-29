@@ -1,11 +1,13 @@
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Query, Form, Request, status
+from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from enum import Enum
 
 
 app = FastAPI()
+templates = Jinja2Templates(directory = "templates")
 
 
 # ENUM FOR VALID GENERS
@@ -51,6 +53,33 @@ def create_book(book:Book):
 @app.get("/books", tags = ["Books"], summary=  "Get all books.", description = "Retrieve a list of all available books in the memory.", response_description="List of Books in memory", response_model = List[Book], status_code = 200)
 def get_all_books():
     return books
+
+
+# ADD NEW BOOK VIA HTML FORM USING JINJA2 TEMPLATE 
+@app.get("/form-ui", response_class = HTMLResponse)
+def book_form(request: Request):
+    return templates.TemplateResponse("book_form.html", {"request": request, "books": books})
+
+
+@app.post("/form-ui", response_class = HTMLResponse, tags = ["Books"], summary = "Add book using and HTML Form", description = "Add new Book using HTML FORM instead of JSON Format", response_description = "The Book added")
+async def submit_form(
+    request: Request,
+    id: int = Form(...),
+    title: str = Form(...),
+    author: str = Form(...),
+    yop: Optional[int] = Form(None),
+    genere: str = Form(...),
+    description: Optional[str] = Form(...),
+    price: float = Form(...)):
+
+    for b in books:
+        if b.id == id or b.title.lower() == title.lower():
+            return HTMLResponse(content = f"<h3 style = 'color:red;'> Book already exists (by ID or Title). </h3><a> href = '/books/form-ui'> Go Back </a>", status_code = 400)
+
+    new_book = Book(id = id, title = title, author = author, yop = yop, genere = genere, description = description, price = price)
+    books.append(new_book)
+    return RedirectResponse(url = "/form-ui", status_code = status.HTTP_303_SEE_OTHER)
+
 
 
 # GET THE FIRST BOOK
@@ -125,6 +154,8 @@ def update_book(book_id: int, updated_book: Book):
             return{"message": "Book Updated", "book": updated_book}
         
     raise HTTPException(status_code = 404, detail = "Book not found")
+
+
 
 
 

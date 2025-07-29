@@ -1,0 +1,32 @@
+<!-- templates/book_form.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Book</title>
+</head>
+<body>
+    <h2>Add a New Book</h2>
+    <form action="/form-ui" method="post">
+        <input type="number" name="id" placeholder="Book ID (int)" required><br>
+        <input type="text" name="title" placeholder="Book Title" required><br>
+        <input type="text" name="author" placeholder="Author (Optional)"><br>
+        <input type="number" name="yop" placeholder="Year of Publication (Optional)"><br>
+        <input type="text" name="genere" placeholder="Genere"><br>
+        <textarea name="description" placeholder="Description (Optional)"></textarea><br>
+        <input type="text" name="price" placeholder="Price"><br>
+        <button type="submit">Add Book</button>
+    </form>
+    <hr>
+    <h3>Books List</h3>
+    {% if books %}
+        <ul>
+            {% for book in books %}
+                <li><strong>{{ book.id }}</strong>{{ book.title }} by {{ book.author }} - {{ book.price }} </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+            <p>No books added yet.</p>
+    {% endif %}
+</body>
+</html>
+ 
