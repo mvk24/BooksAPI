@@ -1,8 +1,5 @@
 ---
- 
-✅ README.md
- 
-# 📚 FastAPI Book Management API
+  # 📚 FastAPI Book Management API
  
 A full-featured FastAPI project to manage a collection of books with both RESTful APIs and HTML form-based submission using Jinja2.
  
@@ -25,7 +22,12 @@ A full-featured FastAPI project to manage a collection of books with both RESTfu
  
 ## 📂 Project Structure
  
-/your_project/ │ ├── main.py                   # FastAPI app and route logic ├── templates/                # HTML templates for form and success page │   ├── add_book.html │   └── success.html └── README.md
+/your_project/ │ 
+├── main.py                  # FastAPI app and route logic
+  ├── templates/              # HTML templates for form and success page │  
+    ├── add_book.html │ 
+      └── success.html 
+      └── README.md
  
 ---
  
@@ -108,7 +110,7 @@ HTML form handles book creation separately via POST /books/form-submit.
  
 🙌 Author
  
-Built with ❤️ using FastAPI by VARUN M
+Built with ❤️ by VARUN M
  
 ---
 
