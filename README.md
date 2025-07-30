@@ -1,186 +1,115 @@
-
-# 📘 Book Management API with FastAPI
+---
  
-A simple and powerful RESTful API built using **FastAPI** to manage books. This project is focused on learning FastAPI concepts like routing, models, path/query parameters, form/file handling, headers/cookies, middleware, dependency injection, and exception handling.
+✅ README.md
+ 
+# 📚 FastAPI Book Management API
+ 
+A full-featured FastAPI project to manage a collection of books with both RESTful APIs and HTML form-based submission using Jinja2.
  
 ---
  
-## 🚀 Features Implemented with Examples
+## 🚀 Features
  
-### ✅ Add a Book (POST `/books`)
-```python
-@app.post("/books")
-def add_book(book: Book):
-    for b in books_db:
-        if b["id"] == book.id:
-            raise HTTPException(status_code=400, detail="Book already exists.")
-    books_db.append(book.dict())
-    return {"message": "Book added successfully"}
- 
-
----
- 
-✅ Get All Books (GET /books)
- 
-@app.get("/books")
-def get_books():
-    return books_db
- 
+- ✅ Add, Update, Delete, and Get Books via API
+- ✅ Input Validation using Pydantic V2
+- ✅ Custom Exception Handling
+- ✅ Dependency Injection
+- ✅ Background Tasks
+- ✅ Middleware (including custom logging middleware)
+- ✅ CORS Setup
+- ✅ HTML Form for adding a book using Jinja2
+- ✅ Success page after form submission
+- ✅ Redirects and HTML response rendering
  
 ---
  
-✅ Get Book by ID (GET /books/{book_id})
+## 📂 Project Structure
  
-@app.get("/books/{book_id}")
-def get_book_by_id(book_id: int):
-    for book in books_db:
-        if book["id"] == book_id:
-            return book
-    raise HTTPException(status_code=404, detail="Book not found")
- 
+/your_project/ │ ├── main.py                   # FastAPI app and route logic ├── templates/                # HTML templates for form and success page │   ├── add_book.html │   └── success.html └── README.md
  
 ---
  
-✅ Update Book by ID (PUT /books/{book_id})
+## 🔧 Tech Stack
  
-@app.put("/books/{book_id}")
-def update_book(book_id: int, updated_book: Book):
-    for i, book in enumerate(books_db):
-        if book["id"] == book_id:
-            books_db[i] = updated_book.dict()
-            return {"message": "Book updated"}
-    raise HTTPException(status_code=404, detail="Book not found")
- 
+- **Language**: Python 3.10+
+- **Framework**: FastAPI
+- **Validation**: Pydantic V2
+- **Templating**: Jinja2
  
 ---
  
-✅ Delete Book by ID (DELETE /books/{book_id})
+## 📡 API Endpoints
  
-@app.delete("/books/{book_id}")
-def delete_book(book_id: int):
-    for i, book in enumerate(books_db):
-        if book["id"] == book_id:
-            del books_db[i]
-            return {"message": "Book deleted"}
-    raise HTTPException(status_code=404, detail="Book not found")
+### 🔹 Book Endpoints
  
+| Method | Endpoint             | Description             |
+|--------|----------------------|-------------------------|
+| GET    | `/books`             | Get all books           |
+| GET    | `/books/{book_id}`   | Get book by ID          |
+| POST   | `/books`             | Add a new book          |
+| PUT    | `/books/{book_id}`   | Update existing book    |
+| DELETE | `/books/{book_id}`   | Delete book by ID       |
  
----
+### 🔹 HTML Endpoints
  
-✅ Query Parameters (GET /search)
- 
-@app.get("/search")
-def search_books(genre: str = Query(None)):
-    if genre:
-        return [book for book in books_db if book.get("genre") == genre]
-    return books_db
- 
+| Method | Endpoint             | Description               |
+|--------|----------------------|---------------------------|
+| GET    | `/books/form`        | Show form to add book     |
+| POST   | `/books/form-submit` | Submit book via form      |
  
 ---
  
-✅ Optional Fields in Request Body
+## 🛠️ How to Run
  
-class Book(BaseModel):
-    id: int
-    title: str
-    author: str
-    genre: Optional[str] = None
+1. **Install dependencies**
+   ```bash
+   pip install fastapi uvicorn jinja2
  
- 
----
- 
-✅ Middleware – Log Requests
- 
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    print(f"Incoming request: {request.method} {request.url}")
-    response = await call_next(request)
-    return response
- 
- 
----
- 
-✅ Dependency Injection – Token Header Check for Protected Route
- 
-def verify_token(x_token: str = Header(...)):
-    if x_token != "varun-token":
-        raise HTTPException(status_code=400, detail="Invalid X-Token Header")
- 
-@app.get("/secure/books", dependencies=[Depends(verify_token)])
-def get_secure_books():
-    return books_db
- 
- 
----
- 
-✅ Custom Exception Handling – Book Not Found
- 
-class BookNotFoundException(Exception):
-    def __init__(self, book_id: int):
-        self.book_id = book_id
- 
-@app.exception_handler(BookNotFoundException)
-def book_not_found_handler(request: Request, exc: BookNotFoundException):
-    return JSONResponse(
-        status_code=404,
-        content={"message": f"Book with ID {exc.book_id} not found"},
-    )
- 
-@app.get("/custom/{book_id}")
-def get_book_custom(book_id: int):
-    for book in books_db:
-        if book["id"] == book_id:
-            return book
-    raise BookNotFoundException(book_id)
- 
- 
----
- 
-📂 Project Structure
- 
-book_api/
-│
-├── main.py               # Main application with routes and logic
-├── models.py             # Pydantic models (Book)
-├── middleware/           # Custom middleware (optional)
-├── README.md             # This documentation
- 
- 
----
- 
-▶️ Run the Project
+2. Run the server
  
 uvicorn main:app --reload
  
-Visit:
  
-Swagger UI: http://127.0.0.1:8000/docs
+3. Visit in browser
  
-ReDoc: http://127.0.0.1:8000/redoc
+Swagger Docs: http://127.0.0.1:8000/docs
+ 
+Book Form UI: http://127.0.0.1:8000/books/form
+ 
+ 
+ 
+ 
+ 
+---
+ 
+📝 Notes
+ 
+Use /docs or /redoc for Swagger-based interactive API testing.
+ 
+HTML form handles book creation separately via POST /books/form-submit.
  
  
  
 ---
  
-✅ Requirements
+📌 Upcoming (Optional Add-ons)
  
-Python 3.9+
+[ ] Database integration (SQLite/PostgreSQL + SQLAlchemy)
  
-FastAPI
+[ ] User Authentication (OAuth2/JWT)
  
-Uvicorn
+[ ] Pagination and Filtering
  
+[ ] Dockerization
  
-Install dependencies:
- 
-pip install fastapi uvicorn
  
  
 ---
  
-🧑‍💻 Author
+🙌 Author
  
-Built by Varun M.
+Built with ❤️ using FastAPI by VARUN M
  
 ---
+
  

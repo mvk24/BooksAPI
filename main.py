@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException, Query, Form, Request, status, Depends, Path
+from fastapi import FastAPI, HTTPException, Query, Form, Request, status, Depends, Path, BackgroundTasks
 from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from db import get_db
 from enum import Enum
@@ -10,6 +11,15 @@ import time
 
 
 app = FastAPI()
+
+# CORS Middleware
+app.add_middleware(CORSMiddleware,
+                   allow_origins = ["*"],
+                   allow_credentials = True,
+                   allow_methods = ["*"],
+                   allow_headers = ["*"]
+                   )
+
 
 
 # MIDDLEWARE TO LOG TIME TAKEN BY DIFF REQUESTS OR PROCESS
@@ -23,8 +33,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
 
 
-# MIDDELEWARE
+# Logging Middleware
 app.add_middleware(LoggingMiddleware)
+
 # JINJA 2 TEMPLATE TO ADD BOOK VIA HTML FORM
 templates = Jinja2Templates(directory = "templates")     
 
@@ -41,13 +52,26 @@ class GenereNum(str, Enum):
 
 # DEFINING THE DATA MODEL WITH VALIDATION
 class Book(BaseModel):
-    id: int
-    title: str = Field(..., min_length = 3, max_length = 100, description = "Title must be between 3-100 characters long.")
-    author: str = Field(..., min_length = 3, description = "Author name should be atleast 3 characters.")
-    genere: str
-    YOP: Optional[int] = None
-    description: str = Field(..., min_length = 5, max_length = 100, description = "Please provide a decsription of length 5-100 characters.")
-    price: float = Field(..., gt = 0)
+    id: int  # Required
+    title: str = Field(..., min_length=3, max_length=100, description="Title must be between 3-100 characters long.")
+    author: str = Field(..., min_length=3, description="Author name should be at least 3 characters.")
+    genere: str = Field(..., min_length=3, description="Genere is required.")
+    YOP: Optional[int] = None  # Optional year of publication
+    description: Optional[str] = None
+    price: float = Field(..., gt=0, description="Price must be greater than 0.")
+
+
+
+# Custom Validator to avoid pre filled data.
+    @field_validator('title', 'author', 'genere', 'description')
+    @classmethod
+    def reject_defalut_strings(cls, value):
+            if value.strip().lower() in ["", "string", "ok", "na", "none", "n/a"]:
+                raise ValueError("Fields cannot be default placeholder")
+            return value
+
+
+
 
 
 
@@ -69,15 +93,40 @@ def get_book_id(book_id: int):
 
 
 
+# Backgorund Task Method
+def log_book_addition(title: str):
+    with open("log.txt", "a") as log:
+        log.write(f"Book added: {title}\n")
+
+
+
 # TO ADD NEW BOOK
 @app.post("/books", response_model = Book, tags = ["Books"], summary = "Add a new book.", description = "Insert a new book into the In memory list.", response_description = "The book added to the system.", response_model_exclude_none = True, status_code = 201)
-def create_book(book:Book):
+def create_book(book: Book):
     for b in books:
         if b.id == book.id:
             raise HTTPException(status_code = 400, detail = f"Book with ID {book.id} already exists.")
     books.append(book)
     return book
 
+
+# Add new Book with Logging to text file.
+@app.post("/books/", response_model = Book, tags = ["Books"], summary = "Add Book with Logging", description = "Add a nee book by Logging to the Log.txt file asynchronously.")
+def add_book(book: Book, background_tasks: BackgroundTasks):
+    for b in books:
+        if b.id == book.id:
+            raise HTTPException(status_code = 400, detail = f"Book with ID {book.id} already exists.")
+    books.append(book)
+    background_tasks.add_task(log_book_addition, book.title)
+    return book
+
+
+
+
+# CORS Setup Confirmation
+@app.get("/")
+def home():
+    return {"message": "CORS Setup succesfful."}
 
 
 # GET ALL BOOKS WITHOUT FILTERS
