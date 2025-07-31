@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query, Form, Request, status, Depends, Path, BackgroundTasks
+from sqlalchemy.orm import Session
+from database import SessionLocal, engine
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
@@ -7,8 +9,11 @@ from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from db import get_db
 from enum import Enum
-import time
+import time, models, schemas
 
+
+# Create tables if not exists
+models.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
 
@@ -47,6 +52,41 @@ class GenereNum(str, Enum):
     sc = "science"
     his = "history"
     te = "tech"
+
+
+
+# Dpendency: DB session Generator
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+
+@app.post("/books_db/", response_model = schemas.BookOut, status_code = 201, summary = "DB POST")
+def create_book(book: schemas.BookCreate, db : Session = Depends(get_db)):
+    db_book = models.Book(**book.model_dump())
+    db.add(db_book)
+    db.commit()
+    db.refresh(db_book)
+    return db_book
+
+
+
+@app.get("/books_db/", response_model = List[schemas.BookOut], summary = "DB GET")
+def read_books(db: Session = Depends(get_db)):
+    # return db.query(models.Book).all()
+    book = db.query(models.Book).all()
+    if not book:
+        raise HTTPException(status_code = 404, detail = "Book not found")
+
+    return book
+    
+
+
+
 
 
 
