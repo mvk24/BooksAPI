@@ -1,7 +1,3 @@
----
- 
-📘 README.md
- 
 # 📚 Book Management API – FastAPI Project
  
 This project is a backend API for managing a collection of books. It demonstrates complete CRUD operations using FastAPI, SQLAlchemy, and Pydantic.
@@ -31,7 +27,14 @@ This project is a backend API for managing a collection of books. It demonstrate
  
 ## 📁 Project Structure
  
-. ├── main.py ├── models.py ├── schemas.py ├── database.py ├── templates/ │   └── add_book.html └── README.md
+ 
+├── main.py 
+├── models.py 
+├── schemas.py
+├── database.py
+├── templates/
+    └── add_book.html
+└── README.md
  
 ---
  
