@@ -5,9 +5,9 @@ class Book(Base):
     __tablename__ = "books"
 
     id = Column(Integer, primary_key = True, index = True)
-    title = Column(String)
-    author = Column(String)
-    genere = Column(String)
-    yop = Column(Integer)
-    description = Column(String)
-    price = Column(Float)
+    title = Column(String, unique = True, index = True, nullable = False)
+    author = Column(String, nullable = False)
+    genre = Column(String, nullable = True)
+    yop = Column(Integer, nullable = True)
+    description = Column(String, nullable = True)
+    price = Column(Float, nullable = True)

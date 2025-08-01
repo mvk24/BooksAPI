@@ -41,19 +41,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 # Logging Middleware
 app.add_middleware(LoggingMiddleware)
 
-# JINJA 2 TEMPLATE TO ADD BOOK VIA HTML FORM
-templates = Jinja2Templates(directory = "templates")     
-
-
-
-# ENUM FOR VALID GENERS
-class GenereNum(str, Enum):
-    fi = "fiction"
-    sc = "science"
-    his = "history"
-    te = "tech"
-
-
 
 # Dpendency: DB session Generator
 def get_db():
@@ -64,19 +51,22 @@ def get_db():
         db.close()
 
 
-
-@app.post("/books_db/", response_model = schemas.BookOut, status_code = 201, summary = "DB POST")
+# Create new book
+@app.post("/books_db/", response_model = schemas.BookOut, tags = ["Books DB"], status_code = 201, summary = "Add a new book.",description = "Insert a new book into the In memory list.", response_description = "The book added to the system.", response_model_exclude_none = True)
 def create_book(book: schemas.BookCreate, db : Session = Depends(get_db)):
-    db_book = models.Book(**book.model_dump())
-    db.add(db_book)
+    existing = db.query(models.Book).filter(models.Book.title).first()
+    if existing:
+        raise HTTPException(status_code = 400, detail = "Book with this title already exists.")
+    new_book = models.Book(**book.model_dump())
+    db.add(new_book)
     db.commit()
-    db.refresh(db_book)
-    return db_book
+    db.refresh(new_book)
+    return new_book
 
 
-
-@app.get("/books_db/", response_model = List[schemas.BookOut], summary = "DB GET")
-def read_books(db: Session = Depends(get_db)):
+# Get all books
+@app.get("/books_db/", response_model = List[schemas.BookOut], tags = ["Books DB"],  summary=  "Get all books.", description = "Retrieve a list of all available books in the memory.", response_description="List of Books in memory", status_code = 200)
+def get_all_books(db: Session = Depends(get_db)):
     # return db.query(models.Book).all()
     book = db.query(models.Book).all()
     if not book:
@@ -88,6 +78,82 @@ def read_books(db: Session = Depends(get_db)):
 
 
 
+# Get Book by ID
+@app.get("/books_db/{book_id}", response_model = schemas.BookOut, tags = ["Books DB"], summary = "Get Book by ID", description = "Fetch a single book usings its ID", response_description = "Matching Book", status_code = 200)
+def read_books_id(book_id: int, db:Session = Depends(get_db)):
+    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+    if not book:
+        raise HTTPException(status_code = 404, detail = "Book not found")
+    return book
+
+
+# Get books by Genre
+@app.get("/books_db/genre/{genre}", response_model = List[schemas.BookOut], tags = ["Books DB"], summary = "Get Books by Genere", description = "Retrieve all books that match a specific genere using Enum", response_description = "List of Books filtered by Genere")
+def get__book_by_genre(genre: str, db:Session = Depends(get_db)):
+    books = db.query(models.Book).filter(models.Book.genre.ilike(f"%{genre}%")).all()
+    if not books:
+        raise HTTPException(status_code = 404, detail = "No books are found with this genre")
+    return books
+
+
+# Filter Books by Author AND/OR Title
+@app.get("/books_db/search/", response_model = List[schemas.BookOut], tags = ["Books DB"],  summary = "Search books by author/title", description = "Filter books by author AND/OR title using Path and Query Parameters.", response_description = "List of filtered books")
+def search_books(title: Optional[str] = None,
+                 author: Optional[str] = None,
+                 db:Session = Depends(get_db)):
+        query = db.query(models.Book)
+        if title:
+            query = query.filter(models.Book.title.ilike(f"%{title}%"))
+        if author:
+            query = query.filter(models.Book.author.ilike(f"%{author}%"))
+        books = query.all()
+        if not books:
+            raise HTTPException(status_code = 404, detail = "No matching books found")
+        return books
+
+        
+
+
+# Update book by ID
+@app.put("/books_db/{book_id}", response_model = schemas.BookOut, tags = ["Books DB"],  summary = "Update Book by ID", description = "Update the details of a specific book using its ID", response_description = "Updatated Book Object", status_code = 200)
+def update_book(book_id: int, updated_book: schemas.BookUpdate, db:Session = Depends(get_db)):
+    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+    if not book:
+        raise HTTPException(status_code = 404, detail = "Book not found")
+    for key, value in updated_book.model_dump(exclude_unset = True).items():
+        setattr(book, key, value)
+    db.commit()
+    db.refresh(book)
+    return book
+
+
+# Delete book by ID
+@app.delete("/book_db/{book_id}", response_model = schemas.BookOut, tags = ["Books DB"], summary = "Delete Book by ID", description = "Delete a book from the memory List using its ID", response_description = "Deleted book", status_code = 200)
+def delete_book(book_id: int, db:Session = Depends(get_db)):
+    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+    if not book:
+        raise HTTPException(status_code = 404, detail = "Book not found")
+    db.delete(book)
+    db.commit()
+    return book
+
+
+
+
+# -----------------------------------------In memory List Implementation------------------------------------------
+
+
+# JINJA 2 TEMPLATE TO ADD BOOK VIA HTML FORM
+templates = Jinja2Templates(directory = "templates")     
+
+
+
+# ENUM FOR VALID GENERS
+class GenereNum(str, Enum):
+    fi = "fiction"
+    sc = "science"
+    his = "history"
+    te = "tech"
 
 
 # DEFINING THE DATA MODEL WITH VALIDATION
