@@ -1,156 +1,171 @@
 ---
  
-📘 FastAPI Book Management API
+✅ README.md – FastAPI Book Management API with JWT Authentication
  
-A backend service built with FastAPI, SQLAlchemy, and SQLite, allowing you to perform CRUD operations on a collection of books. The API includes strong validation, custom error handling, and clean integration with Swagger UI.
+# 📚 FastAPI Book Management API with JWT Authentication
+ 
+A complete backend application built using **FastAPI** that provides:
+ 
+- Full CRUD operations for **Books**
+- Full CRUD operations for **Users**
+- **JWT-based Authentication** (Login only)
+- Modular project structure for scalability and clarity
+ 
+---
+ 
+## 🛠️ Tech Stack
+ 
+- **FastAPI**: Web framework
+- **Pydantic**: Data validation and serialization
+- **SQLAlchemy**: ORM for database
+- **SQLite**: Default database (easily switchable)
+- **bcrypt + passlib**: Password hashing
+- **Python-Jose**: JWT token handling
+- **Uvicorn**: ASGI server
+ 
+---
+ 
+## 📁 Project Structure
+ 
+```bash
+.
+├── main.py
+├── database/
+│   ├── database.py        # DB engine, Base, SessionLocal
+│   └── db.py              # get_db dependency
+├── models/
+│   ├── book_model.py      # Book SQLAlchemy model
+│   └── user_model.py      # User SQLAlchemy model
+├── schemas/
+│   ├── book_schema.py     # Pydantic models for Book
+│   └── user_schema.py     # Pydantic models for User
+├── routers/
+│   ├── book_router.py     # Routes for Book CRUD
+│   ├── user_router.py     # Routes for User CRUD
+│   └── auth_router.py     # Route for Login
+├── utils/
+│   ├── auth.py            # Authentication logic
+│   └── token.py           # JWT generation/verification
+├── requirements.txt
+└── README.md
  
  
 ---
  
-📂 Project Structure
+🧑‍💻 Features
  
-book_api/
-│
-├── main.py                  # FastAPI app with routes
-├── models.py                # SQLAlchemy ORM models
-├── schemas.py               # Pydantic schemas with validation
-├── database.py              # DB connection and session
-└── requirements.txt         # Python dependencies
+🔐 Authentication
+ 
+POST /auth/login: Login with username & password to receive JWT token
+→ Token returned in { "access_token": ..., "token_type": "bearer" }
+→ Token type is "bearer" used in Authorization: Bearer <token> header
+ 
+ 
+📘 Book APIs
+ 
+GET /books/ → Get all books
+ 
+GET /books/{id} → Get a book by ID
+ 
+POST /books/ → Add a new book
+ 
+PUT /books/{id} → Update a book
+ 
+DELETE /books/{id} → Delete a book
+ 
+ 
+👤 User APIs
+ 
+GET /users/ → Get all users
+ 
+GET /users/{id} → Get a user by ID
+ 
+POST /users/ → Register a new user (password is hashed)
+ 
+PUT /users/{id} → Update user info
+ 
+DELETE /users/{id} → Delete a user
+ 
  
  
 ---
  
-✅ Features
+🧾 Usage
  
-🔁 Full CRUD operations (Create, Read, Update, Delete)
+1. 📦 Install dependencies
  
-✅ Strong validation with Pydantic and custom validators
- 
-❌ Prevents default placeholder inputs like "string", "ok", "n/a"
- 
-💾 SQLite database with SQLAlchemy ORM
- 
-🧪 Built-in Swagger UI for testing
- 
-🔐 Optional CORS and middleware integration
- 
-📦 Background tasks & Dependency injection ready (optional extensions)
- 
- 
- 
----
- 
-⚙️ Setup Instructions
- 
-1. Clone the repo & install dependencies
- 
-git clone https://github.com/your-username/book-api.git
-cd book-api
 pip install -r requirements.txt
  
-2. Run the app
+2. ⚙️ Run the app
  
 uvicorn main:app --reload
  
-3. Access Swagger UI
+3. 🌐 Open Swagger UI
  
-Visit http://localhost:8000/docs
+Visit: http://127.0.0.1:8000/docs
+Try out the endpoints with built-in testing interface.
  
  
 ---
  
-🧾 API Endpoints
+🔐 Authentication Flow (JWT)
  
-📥 Add a New Book
+1. Register a user using /users/ POST
  
-POST /books_db/
  
-Body (example):
+2. Login via /auth/login with username and password
+ 
+ 
+3. Get back:
  
 {
-  "title": "The Alchemist",
-  "author": "Paulo Coelho",
-  "genre": "Fiction",
-  "yop": 1988,
-  "description": "Spiritual journey of a shepherd",
-  "price": 299.99
+  "access_token": "jwt-token",
+  "token_type": "bearer"
 }
  
-📚 Get All Books
  
-GET /books_db/
+4. Use it for protected routes in headers:
  
-🔍 Get Book by ID
+Authorization: Bearer <access_token>
  
-GET /books_db/{book_id}
  
-✏️ Update Book by ID
  
-PUT /books_db/{book_id}
- 
-Body: Same as POST
- 
-❌ Delete Book by ID
- 
-DELETE /books_db/{book_id}
+Note: Currently, login is implemented, but routes are not protected with token yet.
  
  
 ---
  
-🛡️ Validation & Error Handling
+⚠️ Notes
  
-Fields like title and author are mandatory.
+Passwords are stored in hashed form using bcrypt.
  
-Other fields (genre, description, yop, price) are optional.
+JWT Secret key and expiry time are defined in utils/token.py.
  
-Rejects default Swagger placeholder values like "string", "ok", "na" using Pydantic validators.
+Token is generated with user’s ID and username.
  
-Proper HTTP status codes and messages on invalid input or missing data.
+Currently only login (/auth/login) is implemented; registration is handled via /users/ POST.
  
  
  
 ---
  
-📦 Tech Stack
+📝 Future Enhancements
  
-Python 3.10+
+✅ Secure all routes with JWT token using OAuth2 dependency
  
-FastAPI
+🔐 Add role-based permissions
  
-SQLAlchemy
+📤 Pagination & filtering in list endpoints
  
-SQLite
+🧪 Unit testing
  
-Pydantic v2.x
- 
- 
- 
----
- 
-🔍 Notes
- 
-Use DB Browser for SQLite to inspect your books.db file if needed.
- 
-To reset DB, delete the books.db file and restart the app.
- 
-Use /books_db/cleanup endpoint (temp-only) to delete invalid books with placeholder data.
+🐳 Dockerization
  
  
  
 ---
  
-✅ To-Do (Optional Enhancements)
+📌 License
  
-Authentication (JWT/OAuth2)
- 
-Pagination for large datasets
- 
-Search and filter capabilities
- 
-Dockerize the app
- 
-Migrate to PostgreSQL for production use
- 
- 
----
+This project is for learning/demo purposes. Customize as needed.
  

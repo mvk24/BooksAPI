@@ -23,8 +23,8 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code = 400, detail = "Email or Username already registered")
     
-
     hashed_pw = hash_password(user.password)
+    print("Hashed Password:", hashed_pw)
 
     new_user = User(
         username = user.username,
@@ -77,9 +77,13 @@ def update_user(user_id: int, new_user_data: UserUpdate, db: Session = Depends(g
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code = 404, detail = "User not found")
-    for key, value in new_user_data.model_dump(exclude_unset = True).items():
-        setattr(user, key, value)
+    # for key, value in new_user_data.model_dump(exclude_unset = True).items():
+    #     setattr(user, key, value)
+    user.username = new_user_data.username
+    user.email = new_user_data.email
+    user.password = hash_password(new_user_data.password)
     db.commit()
+
     db.refresh(user)
     return user
 

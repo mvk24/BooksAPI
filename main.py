@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query, Form, Request, status, Depends, Path, BackgroundTasks
 from routers.book_router import router as book_router
 from routers.user_router import router as user_router
+from routers.auth_router import router as auth_router
 from database import SessionLocal, engine, Base
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -47,6 +48,7 @@ app.add_middleware(LoggingMiddleware)
 
 app.include_router(book_router)
 app.include_router(user_router)
+app.include_router(auth_router)
 
 
 # # Dpendency: DB session Generator
