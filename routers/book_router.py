@@ -4,15 +4,18 @@ from typing import List, Optional
 from models.book_model import Book
 from schemas.book_schema import BookCreate, BookOut, BookUpdate
 from db import get_db
+from utils.token import get_cuurent_user
+from dependencies.roles import admin_only
 
 
-router = APIRouter(prefix = "/books", tags = ["Books DB"])
+# DEPENDENCIES is used to enforese authentication mandatory for all routes
+router = APIRouter(prefix = "/books", tags = ["Books DB"], dependencies = [Depends(get_cuurent_user)])
 
 
 # Create new book
-@router.post("/", response_model = BookOut, status_code = 201, summary = "Add a new book.",description = "Insert a new book into the In memory list.", response_description = "The book added to the system.", response_model_exclude_none = True)
-def create_book(book: BookCreate, db : Session = Depends(get_db)):
-    existing = db.query(Book).filter(Book.title).first()
+@router.post("/", response_model = BookOut, status_code = 201, summary = "Add a new book(ADMIN ONLY)",description = "Insert a new book into the DB.", response_description = "The book added to the system.", response_model_exclude_none = True)
+def create_book(book: BookCreate, db : Session = Depends(get_db), current_user: dict = Depends(admin_only)):
+    existing = db.query(Book).filter(Book.title == book.title).first()
     if existing:
         raise HTTPException(status_code = 400, detail = "Book with this title already exists.")
     new_book = Book(**book.model_dump())
@@ -21,16 +24,15 @@ def create_book(book: BookCreate, db : Session = Depends(get_db)):
     db.refresh(new_book)
     return new_book
 
-
-# Get all books
-@router.get("/", response_model = List[BookOut],  summary=  "Get all books.", description = "Retrieve a list of all available books in the memory.", response_description="List of Books in memory", status_code = 200)
-def get_all_books(db: Session = Depends(get_db)):
-    books = db.query(Book).all()
-    if not books:
-        raise HTTPException(status_code = 404, detail = "Book not found")
-    return books
     
 
+
+# Get all books
+@router.get("/", response_model = List[BookOut],  summary=  "Get all books", description = "Retrieve a list of all available books in the memory.", response_description="List of Books in memory", status_code = 200)
+def get_all_books(db: Session = Depends(get_db)):
+    books = db.query(Book).all()
+    return books
+    
 
 
 
@@ -71,8 +73,8 @@ def search_books(title: Optional[str] = None,
 
 
 # Update book by ID
-@router.put("/{book_id}", response_model = BookOut, summary = "Update Book by ID", description = "Update the details of a specific book using its ID", response_description = "Updatated Book Object", status_code = 200)
-def update_book(book_id: int, updated_book: BookUpdate, db:Session = Depends(get_db)):
+@router.put("/{book_id}", response_model = BookOut, summary = "Update Book by ID(ADMIN ONLY)", description = "Update the details of a specific book using its ID", response_description = "Updatated Book Object", status_code = 200)
+def update_book(book_id: int, updated_book: BookUpdate, db:Session = Depends(get_db), current_user: str = Depends(admin_only)):
     book = db.query(Book).filter(Book.id == book_id).first()
     if not book:
         raise HTTPException(status_code = 404, detail = "Book not found")
@@ -84,8 +86,8 @@ def update_book(book_id: int, updated_book: BookUpdate, db:Session = Depends(get
 
 
 # Delete book by ID
-@router.delete("/{book_id}", response_model = BookOut, summary = "Delete Book by ID", description = "Delete a book from the memory List using its ID", response_description = "Deleted book", status_code = 200)
-def delete_book(book_id: int, db:Session = Depends(get_db)):
+@router.delete("/{book_id}", response_model = BookOut, summary = "Delete Book by ID(ADMIN ONLY)", description = "Delete a book from the memory List using its ID", response_description = "Deleted book", status_code = 200)
+def delete_book(book_id: int, db:Session = Depends(get_db), current_user: str = Depends(admin_only)):
     book = db.query(Book).filter(Book.id == book_id).first()
     if not book:
         raise HTTPException(status_code = 404, detail = "Book not found")

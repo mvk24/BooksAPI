@@ -4,10 +4,13 @@ from sqlalchemy import or_
 from schemas.user_schema import UserCreate, UserOut, UserUpdate
 from models.user_model import User
 from utils.auth import hash_password
+from utils.token import get_cuurent_user
 from db import get_db
 from typing import List
+from dependencies.roles import admin_only
 
-router = APIRouter(prefix = "/users", tags = ["Users DB"])
+
+router = APIRouter(prefix = "/users", tags = ["Users DB"], dependencies = [Depends(admin_only)])
 
 
 # Create a new user
@@ -29,6 +32,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     new_user = User(
         username = user.username,
         email = user.email,
+        role = user.role,
         hashed_password = hashed_pw
     )
 
@@ -39,7 +43,9 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-
+@router.get("/users/me", response_model = UserOut)
+def read_logged_in_user(current_user = Depends(get_cuurent_user)):
+    return current_user
 
 # Get all Users
 @router.get("/", response_model = List[UserOut], summary = "List of Users", description = "List of Registered Users in DB" , response_description = "Registered Users")
@@ -81,6 +87,7 @@ def update_user(user_id: int, new_user_data: UserUpdate, db: Session = Depends(g
     #     setattr(user, key, value)
     user.username = new_user_data.username
     user.email = new_user_data.email
+    user.role = new_user_data.role
     user.password = hash_password(new_user_data.password)
     db.commit()
 
@@ -102,6 +109,7 @@ def delete_user(user_id: int, db:Session = Depends(get_db)):
             "Deleted User": {
                 "id": user.id,
                 "username": user.username,
-                "email": user.email
+                "email": user.email,
+                "role": user.role
                 }
             }

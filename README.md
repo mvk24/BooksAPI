@@ -1,171 +1,180 @@
+
+✅ FINAL README.md (Full Project Demo)
+ 
+# 📚 FastAPI Bookstore API with JWT Auth
+ 
+A modular **FastAPI backend** project with:
+ 
+- User authentication (JWT-based, role-protected)
+- CRUD operations for managing books
+- Modular file structure (routers, models, schemas, utils)
+- SQLAlchemy + Pydantic integration
+- Swagger UI for easy testing
+ 
 ---
  
-✅ README.md – FastAPI Book Management API with JWT Authentication
+## 🚀 Tech Stack
  
-# 📚 FastAPI Book Management API with JWT Authentication
- 
-A complete backend application built using **FastAPI** that provides:
- 
-- Full CRUD operations for **Books**
-- Full CRUD operations for **Users**
-- **JWT-based Authentication** (Login only)
-- Modular project structure for scalability and clarity
+- **FastAPI** – High-performance Python web framework
+- **SQLAlchemy** – ORM for database interactions
+- **SQLite / PostgreSQL / MySQL** – DB support via SQLAlchemy
+- **Pydantic** – For schema validation
+- **JWT (PyJWT)** – For secure user authentication
+- **bcrypt** – Password hashing
  
 ---
  
-## 🛠️ Tech Stack
+## 🎯 Features
  
-- **FastAPI**: Web framework
-- **Pydantic**: Data validation and serialization
-- **SQLAlchemy**: ORM for database
-- **SQLite**: Default database (easily switchable)
-- **bcrypt + passlib**: Password hashing
-- **Python-Jose**: JWT token handling
-- **Uvicorn**: ASGI server
+### 🔐 Authentication
+- User Signup (register)
+- User Login (JWT access token only)
+- Hashed password storage
+- Role-based access (admin/user)
+ 
+### 📘 Book Management (CRUD)
+- Add a new book
+- Get all books
+- Get book by ID
+- Update book
+- Delete book
+ 
+### 👤 User Info & RBAC
+- Get current user
+- Admin-only endpoints
  
 ---
  
 ## 📁 Project Structure
  
+. ├── main.py 
+  ├── database/
+  │   ├── database.py        # SQLAlchemy setup (engine, Base) 
+  │   └── db.py              # Dependency: get_db ├── models/ 
+  │   └── user.py            # User + Book DB Models 
+  ├── schemas/ 
+  │   └── user_schema.py     # Pydantic schemas for User & Book 
+  ├── routers/ 
+  │   ├── auth.py            # Signup & Login 
+  │   ├── user.py            # Get current user, role checks 
+  │   └── book.py            # CRUD routes for books 
+  ├── utils/ 
+  │   ├── hash.py            # Password hashing 
+  │   └── token.py           # JWT encode/decode 
+  ├── README.md
+ 
+---
+ 
+## ⚙️ Setup & Run Locally
+ 
+### 1️⃣ Clone & Install
+ 
 ```bash
-.
-├── main.py
-├── database/
-│   ├── database.py        # DB engine, Base, SessionLocal
-│   └── db.py              # get_db dependency
-├── models/
-│   ├── book_model.py      # Book SQLAlchemy model
-│   └── user_model.py      # User SQLAlchemy model
-├── schemas/
-│   ├── book_schema.py     # Pydantic models for Book
-│   └── user_schema.py     # Pydantic models for User
-├── routers/
-│   ├── book_router.py     # Routes for Book CRUD
-│   ├── user_router.py     # Routes for User CRUD
-│   └── auth_router.py     # Route for Login
-├── utils/
-│   ├── auth.py            # Authentication logic
-│   └── token.py           # JWT generation/verification
-├── requirements.txt
-└── README.md
- 
- 
----
- 
-🧑‍💻 Features
- 
-🔐 Authentication
- 
-POST /auth/login: Login with username & password to receive JWT token
-→ Token returned in { "access_token": ..., "token_type": "bearer" }
-→ Token type is "bearer" used in Authorization: Bearer <token> header
- 
- 
-📘 Book APIs
- 
-GET /books/ → Get all books
- 
-GET /books/{id} → Get a book by ID
- 
-POST /books/ → Add a new book
- 
-PUT /books/{id} → Update a book
- 
-DELETE /books/{id} → Delete a book
- 
- 
-👤 User APIs
- 
-GET /users/ → Get all users
- 
-GET /users/{id} → Get a user by ID
- 
-POST /users/ → Register a new user (password is hashed)
- 
-PUT /users/{id} → Update user info
- 
-DELETE /users/{id} → Delete a user
- 
- 
- 
----
- 
-🧾 Usage
- 
-1. 📦 Install dependencies
- 
+git clone <repo_url>
+cd fastapi-bookstore
 pip install -r requirements.txt
  
-2. ⚙️ Run the app
+2️⃣ Run App
  
 uvicorn main:app --reload
  
-3. 🌐 Open Swagger UI
+3️⃣ Open Swagger UI
  
 Visit: http://127.0.0.1:8000/docs
-Try out the endpoints with built-in testing interface.
  
  
 ---
  
-🔐 Authentication Flow (JWT)
+📌 API Endpoints
  
-1. Register a user using /users/ POST
+🔐 Auth
  
+Method	Endpoint	Description
  
-2. Login via /auth/login with username and password
- 
- 
-3. Get back:
- 
-{
-  "access_token": "jwt-token",
-  "token_type": "bearer"
-}
+POST	/signup	Register new user
+POST	/login	Login, get token
  
  
-4. Use it for protected routes in headers:
+📘 Books (Protected)
  
-Authorization: Bearer <access_token>
+Method	Endpoint	Description
+ 
+GET	/books	List all books
+POST	/books	Add a new book
+GET	/books/{id}	Get book by ID
+PUT	/books/{id}	Update book
+DELETE	/books/{id}	Delete book
  
  
+👤 User Routes (Protected)
  
-Note: Currently, login is implemented, but routes are not protected with token yet.
+Method	Endpoint	Description
  
- 
----
- 
-⚠️ Notes
- 
-Passwords are stored in hashed form using bcrypt.
- 
-JWT Secret key and expiry time are defined in utils/token.py.
- 
-Token is generated with user’s ID and username.
- 
-Currently only login (/auth/login) is implemented; registration is handled via /users/ POST.
+GET	/me	Get current user info
+GET	/admin-only	Admins only endpoint
  
  
  
 ---
  
-📝 Future Enhancements
+🔐 JWT Auth Flow
  
-✅ Secure all routes with JWT token using OAuth2 dependency
+1. Register using /signup
  
-🔐 Add role-based permissions
  
-📤 Pagination & filtering in list endpoints
+2. Login at /login (returns JWT token)
  
-🧪 Unit testing
  
-🐳 Dockerization
+3. Use Swagger UI "Authorize" button:
+ 
+Bearer <your_access_token>
+ 
+ 
+4. Now test any protected routes like /books, /me, etc.
+ 
  
  
  
 ---
  
-📌 License
+🧪 Example Testing (cURL)
  
-This project is for learning/demo purposes. Customize as needed.
+curl -X POST http://127.0.0.1:8000/signup -H "Content-Type: application/json" \
+-d '{"username": "john", "password": "pass123", "role": "user"}'
+ 
+curl -X POST http://127.0.0.1:8000/login -d "username=john&password=pass123"
+ 
+ 
+---
+ 
+✅ Enhancements (TODO / Optional)
+ 
+Add Refresh Token
+ 
+OAuth (Google, GitHub) login
+ 
+Pagination for books
+ 
+Unit tests with PyTest
+ 
+Admin dashboard integration
+ 
+ 
+ 
+---
+ 
+🙏 Credits
+ 
+FastAPI Docs
+ 
+SQLAlchemy Docs
+ 
+PyJWT
+ 
+Community Support
+ 
+
+---
+ 
+ 
  
