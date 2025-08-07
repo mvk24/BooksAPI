@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy.orm import relationship
 from database import Base
 
 class Book(Base):
@@ -11,3 +12,6 @@ class Book(Base):
     yop = Column(Integer, nullable = True)
     description = Column(String, nullable = True)
     price = Column(Float, nullable = True)
+
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates = "books")

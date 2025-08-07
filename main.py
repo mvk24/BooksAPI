@@ -42,6 +42,11 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         print(f"[{request.method}] {request.url} completed in {process_time:.4f}s")
         return response
 
+# CORS Setup Confirmation
+@app.get("/")
+def home():
+    return {"message": "CORS Setup succesfful."}
+
 
 # Logging Middleware
 app.add_middleware(LoggingMiddleware)

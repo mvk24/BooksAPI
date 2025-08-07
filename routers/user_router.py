@@ -10,7 +10,7 @@ from typing import List
 from dependencies.roles import admin_only
 
 
-router = APIRouter(prefix = "/users", tags = ["Users DB"], dependencies = [Depends(admin_only)])
+router = APIRouter(prefix = "/users", tags = ["Users DB"])
 
 
 # Create a new user

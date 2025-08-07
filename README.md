@@ -1,180 +1,88 @@
 
-✅ FINAL README.md (Full Project Demo)
+# FastAPI Book Management API with Authentication and Role-Based Access
  
-# 📚 FastAPI Bookstore API with JWT Auth
+A full-featured Book Management API built using **FastAPI**, supporting CRUD operations, relational user-book mapping, authentication (JWT), and role-based access control (Admin/User). The project follows a **modular structure** and uses **SQLAlchemy ORM** with a real **PostgreSQL/MySQL** backend (configurable).
  
-A modular **FastAPI backend** project with:
+## 📌 Features
  
-- User authentication (JWT-based, role-protected)
-- CRUD operations for managing books
-- Modular file structure (routers, models, schemas, utils)
-- SQLAlchemy + Pydantic integration
-- Swagger UI for easy testing
+### 🧾 Book Management
+- Create, Read, Update, Delete (CRUD) operations for books.
+- Each book is linked to a user (book owner).
+- Advanced schema handling using Pydantic models with field validations.
+- Optional and required fields clearly separated.
+- Books owned by users are visible based on login.
+- Role-based access: only Admins can delete or update any book.
+ 
+### 👥 User Management
+- Create new users with hashed passwords.
+- JWT-based authentication.
+- Secure login and token generation.
+- Users can only modify their own books unless they are Admin.
+- Get user profile, books, and full info.
+ 
+### 🔐 Role-Based Access Control
+- Roles supported: `admin`, `user`
+- Admins can access additional endpoints.
+- Role check integrated with `Depends`.
+ 
+### ⚙️ Tech Stack
+ 
+- **FastAPI**
+- **SQLAlchemy ORM**
+- **Pydantic**
+- **Alembic** (for migrations)
+- **PostgreSQL/MySQL** (DB-agnostic)
+- **JWT** (OAuth2 PasswordBearer)
+- Modular folder structure (models, routers, schemas, utils, db, etc.)
+ 
+## 📂 Project Structure
+ 
+project/ 
+│ ├── app/ 
+│   ├── main.py 
+│   ├── database.py 
+│   ├── db.py 
+│   ├── models/ 
+│   ├── routers/ 
+│   ├── schemas/ 
+│   └── utils/ 
+│ ├── alembic/ 
+│   ├── versions/ 
+│   └── env.py 
+│ ├── tests/                # (To be implemented next) │ ├── requirements.txt └── README.md
+ 
+## 🔐 Authentication Flow
+ 
+1. User registers with username & password.
+2. Password is hashed using `bcrypt`.
+3. Login generates JWT token.
+4. Token used in header: `Authorization: Bearer <token>`
+5. Protected routes require valid token.
+ 
+## ⚖️ Role-Based Access
+ 
+- Each user is assigned a role (`admin` or `user`).
+- Admin-only endpoints are protected via dependency injection and custom logic.
+ 
+## 📈 Coming Next
+ 
+- Automated testing with `pytest`
+- DB testing using a **test database session override**
+- Test user and book setup/teardown using fixtures
  
 ---
  
-## 🚀 Tech Stack
- 
-- **FastAPI** – High-performance Python web framework
-- **SQLAlchemy** – ORM for database interactions
-- **SQLite / PostgreSQL / MySQL** – DB support via SQLAlchemy
-- **Pydantic** – For schema validation
-- **JWT (PyJWT)** – For secure user authentication
-- **bcrypt** – Password hashing
- 
----
- 
-## 🎯 Features
- 
-### 🔐 Authentication
-- User Signup (register)
-- User Login (JWT access token only)
-- Hashed password storage
-- Role-based access (admin/user)
- 
-### 📘 Book Management (CRUD)
-- Add a new book
-- Get all books
-- Get book by ID
-- Update book
-- Delete book
- 
-### 👤 User Info & RBAC
-- Get current user
-- Admin-only endpoints
- 
----
- 
-## 📁 Project Structure
- 
-. ├── main.py 
-  ├── database/
-  │   ├── database.py        # SQLAlchemy setup (engine, Base) 
-  │   └── db.py              # Dependency: get_db ├── models/ 
-  │   └── user.py            # User + Book DB Models 
-  ├── schemas/ 
-  │   └── user_schema.py     # Pydantic schemas for User & Book 
-  ├── routers/ 
-  │   ├── auth.py            # Signup & Login 
-  │   ├── user.py            # Get current user, role checks 
-  │   └── book.py            # CRUD routes for books 
-  ├── utils/ 
-  │   ├── hash.py            # Password hashing 
-  │   └── token.py           # JWT encode/decode 
-  ├── README.md
- 
----
- 
-## ⚙️ Setup & Run Locally
- 
-### 1️⃣ Clone & Install
+## 🚀 Run the App
  
 ```bash
-git clone <repo_url>
-cd fastapi-bookstore
-pip install -r requirements.txt
+uvicorn app.main:app --reload
  
-2️⃣ Run App
+🧪 Test the API
  
-uvicorn main:app --reload
+Visit Swagger: http://127.0.0.1:8000/docs
  
-3️⃣ Open Swagger UI
- 
-Visit: http://127.0.0.1:8000/docs
+Use JWT token in "Authorize" button to test secure endpoints.
  
  
 ---
- 
-📌 API Endpoints
- 
-🔐 Auth
- 
-Method	Endpoint	Description
- 
-POST	/signup	Register new user
-POST	/login	Login, get token
- 
- 
-📘 Books (Protected)
- 
-Method	Endpoint	Description
- 
-GET	/books	List all books
-POST	/books	Add a new book
-GET	/books/{id}	Get book by ID
-PUT	/books/{id}	Update book
-DELETE	/books/{id}	Delete book
- 
- 
-👤 User Routes (Protected)
- 
-Method	Endpoint	Description
- 
-GET	/me	Get current user info
-GET	/admin-only	Admins only endpoint
- 
- 
- 
----
- 
-🔐 JWT Auth Flow
- 
-1. Register using /signup
- 
- 
-2. Login at /login (returns JWT token)
- 
- 
-3. Use Swagger UI "Authorize" button:
- 
-Bearer <your_access_token>
- 
- 
-4. Now test any protected routes like /books, /me, etc.
- 
- 
- 
- 
----
- 
-🧪 Example Testing (cURL)
- 
-curl -X POST http://127.0.0.1:8000/signup -H "Content-Type: application/json" \
--d '{"username": "john", "password": "pass123", "role": "user"}'
- 
-curl -X POST http://127.0.0.1:8000/login -d "username=john&password=pass123"
- 
- 
----
- 
-✅ Enhancements (TODO / Optional)
- 
-Add Refresh Token
- 
-OAuth (Google, GitHub) login
- 
-Pagination for books
- 
-Unit tests with PyTest
- 
-Admin dashboard integration
- 
- 
- 
----
- 
-🙏 Credits
- 
-FastAPI Docs
- 
-SQLAlchemy Docs
- 
-PyJWT
- 
-Community Support
- 
-
----
- 
- 
  

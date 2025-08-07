@@ -1,6 +1,7 @@
 # Pydantic models for response/request
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
+from schemas.user_schema import UserOut
 
 class BookBase(BaseModel):
     title: str = Field(..., min_length = 3)
@@ -27,6 +28,8 @@ class BookUpdate(BookBase):
 
 class BookOut(BookBase):
     id: int
+    owner_id: Optional[int]
+    owner: Optional[UserOut] = None
 
     class Config :
          from_attributes = True  

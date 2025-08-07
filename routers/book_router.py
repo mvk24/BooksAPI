@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from models.book_model import Book
 from schemas.book_schema import BookCreate, BookOut, BookUpdate
@@ -18,7 +18,9 @@ def create_book(book: BookCreate, db : Session = Depends(get_db), current_user: 
     existing = db.query(Book).filter(Book.title == book.title).first()
     if existing:
         raise HTTPException(status_code = 400, detail = "Book with this title already exists.")
-    new_book = Book(**book.model_dump())
+    
+    new_book = Book(**book.model_dump(), owner_id = current_user.id)
+    
     db.add(new_book)
     db.commit()
     db.refresh(new_book)
@@ -30,7 +32,9 @@ def create_book(book: BookCreate, db : Session = Depends(get_db), current_user: 
 # Get all books
 @router.get("/", response_model = List[BookOut],  summary=  "Get all books", description = "Retrieve a list of all available books in the memory.", response_description="List of Books in memory", status_code = 200)
 def get_all_books(db: Session = Depends(get_db)):
-    books = db.query(Book).all()
+    books = db.query(Book).options(joinedload(Book.owner)).all()
+    for book in books:
+        print(book.title, book.owner, book.owner_id)
     return books
     
 
