@@ -1,275 +1,329 @@
----
+
+# Book API with Authentication
  
-Book API with Authentication - FastAPI Project
- 
- 
----
- 
-Project Overview
- 
-This is a REST API for managing books and users with secure authentication and role-based access control. It uses:
- 
-FastAPI for the API framework
- 
-SQLite as the database (can be swapped)
- 
-SQLAlchemy ORM for DB interaction
- 
-JWT tokens for authentication with OAuth2 password flow
- 
-Role-based authorization (admin vs user)
- 
-Unit testing with pytest and test DB isolation
- 
- 
+This project is a FastAPI-based RESTful API for managing books and users with authentication & authorization using OAuth2 and JWT tokens.
  
 ---
  
-Features
+## Table of Contents
  
-User signup & login with JWT token issuance
- 
-Admin-only book CRUD operations
- 
-Admin-only user management
- 
-Secure password hashing with bcrypt
- 
-API docs with Swagger UI auto-generated
- 
-Unit tests covering core endpoints
- 
- 
+- [Project Structure](#project-structure)  
+- [Setup and Installation](#setup-and-installation)  
+- [Running the Application](#running-the-application)  
+- [API Routes with Examples](#api-routes-with-examples)  
+- [Testing](#testing)  
+- [Technologies Used](#technologies-used)  
  
 ---
  
-Project Structure
+## Project Structure
  
-.
-├── app/
-│   ├── main.py                 # FastAPI app initialization & middleware
-│   ├── database.py             # DB engine, session, Base
-│   ├── db.py                   # DB dependency override function
-│   ├── models/
-│   │   ├── book_model.py       # Book ORM model
-│   │   └── user_model.py       # User ORM model
-│   ├── schemas/
-│   │   ├── book_schema.py      # Book Pydantic schemas
-│   │   ├── user_schema.py      # User Pydantic schemas
-│   │   └── token_schema.py     # Token schema for login response
-│   ├── routers/
-│   │   ├── book_router.py      # Book endpoints (admin only)
-│   │   ├── user_router.py      # User endpoints (admin only)
-│   │   └── auth_router.py      # Authentication (signup/login)
-│   ├── utils/
-│   │   ├── auth.py             # Password hashing/verification
-│   │   └── token.py            # JWT token creation & validation
-│   └── dependencies/
-│       └── roles.py            # Role-based access dependencies
+fastapi_project/
+├── main.py                  # FastAPI app entry point
+├── database.py              # Database engine and Base declaration
+├── db.py                    # Database session dependency (get_db)
+├── models/
+│   ├── book_model.py        # Book ORM model
+│   └── user_model.py        # User ORM model
+├── schemas/
+│   ├── book_schema.py       # Book Pydantic schemas
+│   ├── user_schema.py       # User Pydantic schemas
+│   └── token_schema.py      # Token schema
+├── routers/
+│   ├── book_router.py       # Book API routes
+│   ├── user_router.py       # User API routes
+│   └── auth_router.py       # Authentication routes (signup/login)
+├── utils/
+│   ├── auth.py              # Password hashing and auth helper functions
+│   └── token.py             # JWT token creation and verification
 ├── tests/
-│   ├── conftest.py             # Pytest fixtures, test DB setup
-│   └── test_books.py           # Unit tests for books
-├── books.db                    # SQLite DB file (dev)
-├── requirements.txt            # Python dependencies
-└── README.md                   # This file
- 
+│   ├── conftest.py          # Pytest fixtures and dependency overrides for testing
+│   ├── test_books.py        # Unit tests for Book endpoints
+│   └── test_users.py        # Unit tests for User endpoints (optional)
+├── requirements.txt         # Python dependencies
+└── README.md                # Project documentation
  
 ---
  
-Setup & Running Locally
+## Setup and Installation
  
-1. Clone repo:
+1. Clone the repository:  
+   ```bash
+   git clone <your-repo-url>
+   cd fastapi
  
- 
- 
-git clone <your-repo-url>
-cd <your-repo-folder>
- 
-2. Create & activate virtualenv:
- 
- 
+2. Create and activate a virtual environment:
  
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
+source venv/bin/activate      # Linux/Mac  
+.\venv\Scripts\activate       # Windows PowerShell
+ 
  
 3. Install dependencies:
  
- 
- 
 pip install -r requirements.txt
  
-4. Run FastAPI server:
+ 
+4. Start the app (tables auto-created):
+ 
+uvicorn main:app --reload
+ 
+ 
+5. Open API docs at:
+ 
+http://127.0.0.1:8000/docs
  
  
  
-uvicorn app.main:app --reload
  
-5. Open http://localhost:8000/docs to access Swagger UI docs.
+---
  
+API Routes with Examples
+ 
+All routes require authentication except signup and login. Admin role is required for book creation, update, and deletion.
+ 
+ 
+---
+ 
+Authentication Routes
+ 
+1. Signup
+ 
+Endpoint: POST /auth/signup
+ 
+Description: Register a new user.
+ 
+Input JSON:
+ 
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "strongpassword"
+}
+ 
+Output JSON:
+ 
+{
+  "id": 1,
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "role": "user"
+}
  
  
  
 ---
  
-Authentication Flow
+2. Login
  
+Endpoint: POST /auth/login
  
----
+Description: Authenticate user and get JWT token.
  
-Signup (Register User)
+Input (form data):
  
-Endpoint: POST /signup/
+username=newuser
+password=strongpassword
  
-Request JSON:
- 
- 
-{
-  "username": "user1",
-  "email": "user1@example.com",
-  "password": "securepassword"
-}
- 
-What happens:
- 
-Password is hashed before storing in DB.
- 
-User role defaults to "user".
- 
-User is saved to database.
- 
-JWT access token is generated and returned.
- 
- 
-Response:
- 
+Output JSON:
  
 {
-  "access_token": "<jwt_token>",
-  "token_type": "bearer",
-  "user": {
-    "id": 2,
-    "username": "user1",
-    "email": "user1@example.com",
-    "role": "user"
-  }
-}
- 
- 
----
- 
-Login (Get Token)
- 
-Endpoint: POST /login/
- 
-Request JSON:
- 
- 
-{
-  "username": "user1",
-  "password": "securepassword"
-}
- 
-What happens:
- 
-Username & password verified.
- 
-If valid, JWT token is issued.
- 
-Otherwise, 401 Unauthorized error returned.
- 
- 
-Response:
- 
- 
-{
-  "access_token": "<jwt_token>",
+  "access_token": "<JWT_TOKEN>",
   "token_type": "bearer"
 }
  
  
----
- 
-How to Use the Token
- 
-For any protected route, send HTTP header:
- 
- 
-Authorization: Bearer <jwt_token>
- 
  
 ---
  
-API Endpoints
+User Routes (Authentication required)
  
+3. Get All Users
  
----
+Endpoint: GET /users/
  
-Book Routes (Admin only)
+Description: Fetch all registered users.
  
-All require Authorization header with admin token.
+Output JSON (list):
  
-Method	Path	Description	Request Body	Response
- 
-POST	/books/	Create a new book	BookCreate schema (JSON)	Created book object
-GET	/books/	Get all books	None	List of books
-GET	/books/{id}	Get book by ID	None	Single book object
-PUT	/books/{id}	Update a book	BookUpdate schema (JSON)	Updated book object
-DELETE	/books/{id}	Delete a book	None	Success message
+[
+  {
+    "id": 1,
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "role": "user"
+  },
+  ...
+]
  
  
  
 ---
  
-User Routes (Admin only)
+4. Get User by ID
  
-Method	Path	Description	Request Body	Response
+Endpoint: GET /users/{user_id}
  
-GET	/users/	List all users	None	List of users
-GET	/users/{id}	Get user by ID	None	Single user object
-POST	/users/	Create a new user	UserCreate schema (JSON)	Created user object
-PUT	/users/{id}	Update a user	UserUpdate schema (JSON)	Updated user object
-DELETE	/users/{id}	Delete a user	None	Success message
+Description: Fetch user details by ID.
  
- 
- 
----
- 
-Auth Routes (Public)
- 
-Method	Path	Description	Request Body	Response
- 
-POST	/signup/	Register new user	UserSignup schema (JSON)	JWT token + User info
-POST	/login/	User login	Login schema (JSON)	JWT token
- 
- 
- 
----
- 
-Example Usage: Creating a Book
- 
-1. Signup or login to get a token.
- 
- 
-2. Send POST /books/ with this JSON:
- 
- 
+Output JSON:
  
 {
-  "title": "My First Book",
-  "author": "John Doe",
-  "genre": "Fiction",
-  "yop": 2023,
-  "description": "A thrilling story",
-  "price": 15.99
+  "id": 1,
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "role": "user"
 }
  
-Include HTTP header:
  
-Authorization: Bearer <your_jwt_token>
  
-3. Response returns the created book object.
+---
  
+5. Update User
+ 
+Endpoint: PUT /users/{user_id}
+ 
+Description: Update user info (username/email).
+ 
+Input JSON:
+ 
+{
+  "username": "updateduser",
+  "email": "updated@example.com"
+}
+ 
+Output JSON: Updated user object (similar to above).
+ 
+ 
+ 
+---
+ 
+6. Delete User
+ 
+Endpoint: DELETE /users/{user_id}
+ 
+Description: Delete user by ID.
+ 
+Output JSON:
+ 
+{
+  "detail": "User deleted successfully."
+}
+ 
+ 
+ 
+---
+ 
+Book Routes (Authentication required, Admin only for POST/PUT/DELETE)
+ 
+7. Create Book
+ 
+Endpoint: POST /books/
+ 
+Description: Add new book to the collection.
+ 
+Input JSON:
+ 
+{
+  "title": "FastAPI Guide",
+  "author": "John Doe",
+  "genre": "Tech",
+  "yop": 2023,
+  "description": "A complete guide on FastAPI.",
+  "price": 39.99
+}
+ 
+Output JSON:
+ 
+{
+  "id": 1,
+  "title": "FastAPI Guide",
+  "author": "John Doe",
+  "genre": "Tech",
+  "yop": 2023,
+  "description": "A complete guide on FastAPI.",
+  "price": 39.99,
+  "owner_id": 1
+}
+ 
+ 
+ 
+---
+ 
+8. Get All Books
+ 
+Endpoint: GET /books/
+ 
+Description: List all books.
+ 
+Output JSON (list):
+ 
+[
+  {
+    "id": 1,
+    "title": "FastAPI Guide",
+    "author": "John Doe",
+    "genre": "Tech",
+    "yop": 2023,
+    "description": "A complete guide on FastAPI.",
+    "price": 39.99,
+    "owner_id": 1
+  },
+  ...
+]
+ 
+ 
+ 
+---
+ 
+9. Get Book by ID
+ 
+Endpoint: GET /books/{book_id}
+ 
+Description: Fetch details of a single book.
+ 
+Output JSON:
+ 
+{
+  "id": 1,
+  "title": "FastAPI Guide",
+  "author": "John Doe",
+  "genre": "Tech",
+  "yop": 2023,
+  "description": "A complete guide on FastAPI.",
+  "price": 39.99,
+  "owner_id": 1
+}
+ 
+ 
+ 
+---
+ 
+10. Update Book
+ 
+Endpoint: PUT /books/{book_id}
+ 
+Description: Update book details.
+ 
+Input JSON: (same as create)
+ 
+Output JSON: Updated book object.
+ 
+ 
+ 
+---
+ 
+11. Delete Book
+ 
+Endpoint: DELETE /books/{book_id}
+ 
+Description: Delete book by ID.
+ 
+Output JSON:
+ 
+{
+  "detail": "Book deleted successfully."
+}
  
  
  
@@ -277,65 +331,56 @@ Authorization: Bearer <your_jwt_token>
  
 Testing
  
-Run all tests with:
- 
+Run tests with:
  
 pytest -v
  
-Tests use an in-memory SQLite DB and override real DB connection.
+Uses a test database to isolate tests from real data.
  
-Includes tests for book creation and retrieval.
- 
-You can add tests for user routes and auth similarly.
+Tests cover main functionality for books and users.
  
  
  
 ---
  
-Notes on Authentication & Authorization
+Technologies Used
  
-Passwords hashed securely using bcrypt.
+FastAPI
  
-JWT tokens encode user id and role.
+SQLAlchemy ORM
  
-Dependency overrides in FastAPI enforce role restrictions (admin vs user).
+SQLite (default, easily switchable)
  
-Admin users can manage books and users.
+Pydantic schemas
  
-Normal users can only signup/login.
+OAuth2 with JWT authentication
  
- 
- 
----
- 
-Deployment (Basic Overview)
- 
-1. Use production server like uvicorn or gunicorn with multiple workers.
- 
- 
-2. Configure environment variables for secrets and DB connection.
- 
- 
-3. Use cloud services like AWS EC2, Heroku, DigitalOcean, or managed platforms.
- 
- 
-4. Secure the app with HTTPS and proper CORS settings.
- 
- 
-5. Use Docker for containerized deployment (optional).
- 
- 
-6. Automate migrations and backups as needed.
- 
+Pytest for automated testing
  
  
  
 ---
  
-Summary
+Notes
  
-This project covers a full, secure backend API for managing books and users with JWT-based authentication and role-based access. The README provides setup, usage, testing, and deployment basics.
+Make sure to secure your JWT secret key in production.
  
+You can use the Swagger UI docs for interactive testing: /docs
+ 
+Extend roles and permissions as needed for your project.
+ 
+ 
+ 
+---
+ 
+Contact
+ 
+Open issues or pull requests for questions or contributions.
+ 
+ 
+---
+ 
+This README was created to help new developers onboard quickly and understand the project fully.
  
 ---
  
