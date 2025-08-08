@@ -4,12 +4,12 @@ from typing import List, Optional
 from models.book_model import Book
 from schemas.book_schema import BookCreate, BookOut, BookUpdate
 from db import get_db
-from utils.token import get_cuurent_user
+from utils.token import get_current_user
 from dependencies.roles import admin_only
 
 
 # DEPENDENCIES is used to enforese authentication mandatory for all routes
-router = APIRouter(prefix = "/books", tags = ["Books DB"], dependencies = [Depends(get_cuurent_user)])
+router = APIRouter(prefix = "/books", tags = ["Books DB"], dependencies = [Depends(get_current_user)])
 
 
 # Create new book

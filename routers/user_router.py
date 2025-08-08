@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from schemas.user_schema import UserCreate, UserOut, UserUpdate
 from models.user_model import User
 from utils.auth import hash_password
-from utils.token import get_cuurent_user
+from utils.token import get_current_user
 from db import get_db
 from typing import List
 from dependencies.roles import admin_only
@@ -44,7 +44,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/users/me", response_model = UserOut)
-def read_logged_in_user(current_user = Depends(get_cuurent_user)):
+def read_logged_in_user(current_user = Depends(get_current_user)):
     return current_user
 
 # Get all Users

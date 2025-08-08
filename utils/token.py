@@ -52,7 +52,7 @@ def verify_access_token(token: str):
     
 
 
-def get_cuurent_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     token_data = verify_access_token(token)
     user = db.query(User).filter(User.username == token_data["username"]).first()
     if user is None:
